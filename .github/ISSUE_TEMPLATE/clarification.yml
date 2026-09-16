@@ -1,0 +1,24 @@
+name: Clarification
+description: Ask for clarification of an existing Nordic profile decision.
+title: "[CLARIFICATION] "
+labels: [clarification]
+body:
+  - type: input
+    id: decision-id
+    attributes:
+      label: Decision ID or subject
+      placeholder: NP-0001 or StopPlace.parentSiteRef
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: What is unclear?
+      description: Include the interpretation that caused the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: Add a small example or link. Avoid confidential data.

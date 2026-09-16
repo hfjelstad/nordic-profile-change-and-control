@@ -1,0 +1,42 @@
+name: Data package proposal
+description: Propose a shared format or rule for Nordic data packages.
+title: "[PACKAGE] "
+labels: [data-package, proposed]
+body:
+  - type: input
+    id: package-name
+    attributes:
+      label: Package name
+      placeholder: Nordic static timetable package
+    validations:
+      required: true
+  - type: dropdown
+    id: content
+    attributes:
+      label: Main content
+      options:
+        - NeTEx
+        - SIRI
+        - NeTEx and SIRI
+        - Metadata or manifest
+    validations:
+      required: true
+  - type: textarea
+    id: structure
+    attributes:
+      label: Proposed structure
+      description: Describe files, frames, messages, manifest fields or delivery units.
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale and examples
+    validations:
+      required: true
+  - type: input
+    id: proposer
+    attributes:
+      label: Proposer and organisation
+    validations:
+      required: true

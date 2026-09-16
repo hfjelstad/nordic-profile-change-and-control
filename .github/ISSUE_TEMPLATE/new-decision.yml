@@ -1,0 +1,76 @@
+name: New profile decision
+description: Propose a new Nordic decision for NeTEx, SIRI or a data package.
+title: "[NEW] "
+labels: [decision, proposed]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the desired common Nordic decision. You do not need to know RDF or SHACL.
+  - type: dropdown
+    id: standard
+    attributes:
+      label: Standard or scope
+      options:
+        - NeTEx
+        - SIRI
+        - NeTEx and SIRI
+        - Data package
+    validations:
+      required: true
+  - type: input
+    id: subject
+    attributes:
+      label: Subject
+      description: Class, property, service, message or package element.
+      placeholder: StopPlace.parentSiteRef
+    validations:
+      required: true
+  - type: dropdown
+    id: decision
+    attributes:
+      label: Proposed decision
+      options:
+        - Required
+        - Optional
+        - Excluded
+        - Conditional
+        - National extension
+        - Informative guidance
+        - Defer decision
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed rule
+      description: State what should be allowed, required or excluded.
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale and evidence
+      description: Explain why this should be common Nordic practice. Add links or examples if available.
+    validations:
+      required: true
+  - type: checkboxes
+    id: countries
+    attributes:
+      label: Countries considered
+      options:
+        - label: Norway
+        - label: Sweden
+        - label: Finland
+        - label: Denmark
+  - type: textarea
+    id: example
+    attributes:
+      label: Example data
+      description: Add a small example or link. Avoid confidential data.
+  - type: input
+    id: proposer
+    attributes:
+      label: Proposer and organisation
+    validations:
+      required: true

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Nordic Profile documentation
+    url: https://github.com/hfjelstad/nordic-profile-change-and-control
+    about: Read the decision model before submitting a change.

@@ -1,0 +1,32 @@
+id: NP-0000
+title: Replace with a short decision title
+status: proposed
+standard: netex # netex | siri | both | package
+profile: nordic-core
+subject:
+  class: StopPlace
+  property: parentSiteRef
+  service: null
+  message: null
+decision:
+  type: deferred # required | optional | excluded | conditional | national | informative
+  rule: {}
+rationale: >-
+  Explain the decision in language that domain experts and implementers can both understand.
+scope:
+  countries: [NO, SE, FI, DK]
+  organisations: []
+evidence: []
+impact:
+  breakingChange: false
+  affectedSystems: []
+ccb:
+  proposedBy: null
+  reviewers: []
+  decisionDate: null
+  decisionVersion: null
+  effectiveFrom: null
+links:
+  issues: []
+  relatedDecisions: []
+  implementations: []
