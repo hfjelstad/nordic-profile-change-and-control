@@ -4,13 +4,18 @@ status: proposed
 standard: netex # netex | siri | both | package
 profile: nordic-core
 subject:
-  class: StopPlace
-  property: parentSiteRef
+  class: netex:StopPlace
+  property: netex:parentSiteRef
   service: null
   message: null
 decision:
   type: deferred # required | optional | excluded | conditional | national | informative
-  rule: {}
+  rule:
+    minCount: null
+    maxCount: null
+    class: null
+    datatype: null
+    in: []
 rationale: >-
   Explain the decision in language that domain experts and implementers can both understand.
 scope:
@@ -26,6 +31,7 @@ ccb:
   decisionDate: null
   decisionVersion: null
   effectiveFrom: null
+  issue: null
 links:
   issues: []
   relatedDecisions: []
