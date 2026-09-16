@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Overview of the Nordic Profile decisions for NeTEx, SIRI and data packages.">
+  <title>Nordic Profile CCB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href=".">
+      <span class="brand-mark" aria-hidden="true">NP</span>
+      <span>Nordic Profile <strong>CCB</strong></span>
+    </a>
+    <a class="top-link" href="https://github.com/hfjelstad/nordic-profile-change-and-control" target="_blank" rel="noreferrer">Repository <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Change and Control Board</p>
+        <h1>One shared view of the Nordic Profile.</h1>
+        <p class="hero-intro">Decisions for NeTEx, SIRI and Nordic data packages, gathered in one place for the people who use and govern them.</p>
+        <a class="primary-action" href="https://github.com/hfjelstad/nordic-profile-change-and-control/issues/new?template=new-decision.yml" target="_blank" rel="noreferrer">Propose a change <span aria-hidden="true">↗</span></a>
+        <p class="action-note">You will be taken to a short GitHub form. A GitHub account is required to submit it.</p>
+      </div>
+      <div class="hero-stamp" aria-label="Nordic Profile status">
+        <span class="stamp-label">Current release</span>
+        <strong>Draft</strong>
+        <span class="stamp-rule"></span>
+        <span>Decisions are being gathered</span>
+      </div>
+    </section>
+
+    <section class="dashboard" aria-labelledby="overview-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">At a glance</p>
+          <h2 id="overview-title">Profile coverage</h2>
+        </div>
+        <p class="section-note">The overview separates what is decided from what still needs the board.</p>
+      </div>
+      <div class="summary-grid">
+        <article class="summary-card summary-card-accent">
+          <span class="summary-number">0</span>
+          <span class="summary-label">Accepted decisions</span>
+        </article>
+        <article class="summary-card">
+          <span class="summary-number">3</span>
+          <span class="summary-label">Decision areas</span>
+        </article>
+        <article class="summary-card">
+          <span class="summary-number">4</span>
+          <span class="summary-label">Countries in scope</span>
+        </article>
+        <article class="summary-card">
+          <span class="summary-number">0</span>
+          <span class="summary-label">Open decisions shown</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="areas" aria-labelledby="areas-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">The decision map</p>
+          <h2 id="areas-title">What the CCB governs</h2>
+        </div>
+        <label class="filter-label" for="area-filter">Show <select id="area-filter"><option value="all">all areas</option><option value="netex">NeTEx</option><option value="siri">SIRI</option><option value="package">Data packages</option></select></label>
+      </div>
+      <div class="area-grid" id="area-grid">
+        <article class="area-card" data-area="netex">
+          <div class="area-top"><span class="area-index">01</span><span class="status-pill status-draft">Building</span></div>
+          <h3>NeTEx profile</h3>
+          <p>Classes, properties, cardinalities, code values and the boundaries of the common Nordic profile.</p>
+          <a href="https://github.com/hfjelstad/nordic-profile-change-and-control/issues?q=is%3Aissue+label%3ANeTEx" target="_blank" rel="noreferrer">View NeTEx issues <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="area-card" data-area="siri">
+          <div class="area-top"><span class="area-index">02</span><span class="status-pill status-draft">Building</span></div>
+          <h3>SIRI profile</h3>
+          <p>Services, messages, references, timing rules and how real-time information connects to planned data.</p>
+          <a href="https://github.com/hfjelstad/nordic-profile-change-and-control/issues?q=is%3Aissue+label%3ASIRI" target="_blank" rel="noreferrer">View SIRI issues <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="area-card" data-area="package">
+          <div class="area-top"><span class="area-index">03</span><span class="status-pill status-draft">Building</span></div>
+          <h3>Data packages</h3>
+          <p>Manifests, file structure, delivery expectations and the shape of a package that systems can consume.</p>
+          <a href="https://github.com/hfjelstad/nordic-profile-change-and-control/issues?q=is%3Aissue+label%3Adata-package" target="_blank" rel="noreferrer">View package issues <span aria-hidden="true">↗</span></a>
+        </article>
+      </div>
+      <div class="empty-state" id="empty-state" hidden>No decision areas match this filter.</div>
+    </section>
+
+    <section class="how-it-works" aria-labelledby="flow-title">
+      <div class="flow-intro">
+        <p class="eyebrow">From question to rule</p>
+        <h2 id="flow-title">The CCB keeps the decision human-readable.</h2>
+        <p>People start with a short proposal. The board discusses it in GitHub. Only an accepted decision becomes part of the versioned profile that technical repositories consume.</p>
+      </div>
+      <ol class="flow-list">
+        <li><span>01</span><strong>Propose</strong><small>Describe the change in plain language.</small></li>
+        <li><span>02</span><strong>Discuss</strong><small>Countries and implementers add evidence.</small></li>
+        <li><span>03</span><strong>Decide</strong><small>CCB records an accepted or deferred outcome.</small></li>
+        <li><span>04</span><strong>Publish</strong><small>Downstream profiles consume the release.</small></li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Nordic Profile CCB</span><span>NeTEx · SIRI · Data packages</span></footer>
+  <script src="app.js"></script>
+</body>
+</html>

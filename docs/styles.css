@@ -1,0 +1,86 @@
+ :root {
+  --ink: #17211f;
+  --muted: #61706b;
+  --paper: #f4f1e9;
+  --white: #fffdf8;
+  --line: #d8ddd5;
+  --teal: #0f766e;
+  --teal-dark: #09534e;
+  --coral: #e26d5a;
+  --yellow: #f3c969;
+  --mono: "DM Mono", monospace;
+  --sans: "Manrope", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--paper); scroll-behavior: smooth; }
+body { margin: 0; color: var(--ink); font-family: var(--sans); line-height: 1.5; }
+a { color: inherit; }
+.topbar { align-items: center; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; margin: 0 auto; max-width: 1280px; padding: 22px 5vw; }
+.brand { align-items: center; display: flex; font-size: .88rem; gap: 11px; letter-spacing: .02em; text-decoration: none; }
+.brand strong { color: var(--teal); font-weight: 800; }
+.brand-mark { align-items: center; background: var(--teal); color: white; display: inline-flex; font-family: var(--mono); font-size: .7rem; height: 31px; justify-content: center; letter-spacing: -.06em; width: 31px; }
+.top-link, .area-card a { color: var(--teal-dark); font-family: var(--mono); font-size: .72rem; text-decoration: none; }
+.top-link:hover, .area-card a:hover { color: var(--coral); }
+main { margin: 0 auto; max-width: 1280px; }
+.hero { align-items: end; display: grid; gap: 8vw; grid-template-columns: minmax(0, 1fr) 270px; min-height: 490px; padding: 86px 5vw 74px; }
+.eyebrow { color: var(--coral); font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; margin: 0 0 18px; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { font-size: clamp(3rem, 7vw, 6.7rem); letter-spacing: -.075em; line-height: .94; margin-bottom: 27px; max-width: 800px; }
+h2 { font-size: clamp(1.65rem, 3vw, 2.65rem); letter-spacing: -.055em; line-height: 1; margin-bottom: 0; }
+h3 { font-size: 1.38rem; letter-spacing: -.04em; margin-bottom: 12px; }
+.hero-intro { color: var(--muted); font-size: 1.02rem; max-width: 510px; }
+.primary-action { background: var(--coral); color: #fffdf8; display: inline-flex; font-size: .88rem; font-weight: 800; gap: 28px; margin-top: 15px; padding: 15px 19px; text-decoration: none; }
+.primary-action:hover { background: var(--teal); }
+.action-note { color: var(--muted); font-family: var(--mono); font-size: .64rem; margin: 12px 0 0; }
+.hero-stamp { border: 1px solid var(--ink); display: flex; flex-direction: column; gap: 8px; padding: 20px; transform: rotate(2deg); }
+.hero-stamp strong { color: var(--teal); font-size: 2.35rem; letter-spacing: -.07em; line-height: 1; }
+.stamp-label, .hero-stamp > span:last-child { font-family: var(--mono); font-size: .66rem; }
+.stamp-rule { background: var(--coral); height: 3px; margin: 12px 0 7px; width: 100%; }
+.dashboard, .areas { border-top: 1px solid var(--line); padding: 66px 5vw 72px; }
+.section-heading { align-items: end; display: flex; justify-content: space-between; margin-bottom: 34px; }
+.section-note { color: var(--muted); font-size: .82rem; margin: 0; max-width: 270px; }
+.summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, 1fr); }
+.summary-card { background: var(--white); border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 140px; padding: 20px; }
+.summary-card-accent { background: var(--teal); border-color: var(--teal); color: white; }
+.summary-number { font-size: 3.2rem; font-weight: 700; letter-spacing: -.08em; line-height: 1; }
+.summary-label { color: var(--muted); font-family: var(--mono); font-size: .67rem; margin-top: auto; }
+.summary-card-accent .summary-label { color: #b7dbd5; }
+.filter-label { color: var(--muted); font-family: var(--mono); font-size: .7rem; }
+select { background: transparent; border: 0; border-bottom: 1px solid var(--ink); color: var(--ink); font: inherit; padding: 3px 25px 3px 4px; }
+.area-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
+.area-card { background: var(--white); border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 275px; padding: 23px; }
+.area-card p { color: var(--muted); font-size: .88rem; max-width: 290px; }
+.area-card a { margin-top: auto; }
+.area-top { align-items: center; display: flex; justify-content: space-between; margin-bottom: 38px; }
+.area-index { color: var(--coral); font-family: var(--mono); font-size: .73rem; }
+.status-pill { border: 1px solid currentColor; font-family: var(--mono); font-size: .62rem; padding: 4px 7px; }
+.status-draft { color: var(--teal); }
+.empty-state { color: var(--muted); padding: 30px 0 0; }
+.how-it-works { background: var(--teal-dark); color: white; display: grid; gap: 8vw; grid-template-columns: .9fr 1.1fr; padding: 75px 5vw; }
+.how-it-works .eyebrow { color: var(--yellow); }
+.how-it-works h2 { max-width: 450px; }
+.how-it-works p { color: #bdd3cd; font-size: .9rem; max-width: 430px; }
+.flow-list { list-style: none; margin: 0; padding: 0; }
+.flow-list li { align-items: baseline; border-top: 1px solid #467b74; display: grid; gap: 17px; grid-template-columns: 35px 1fr 1.6fr; padding: 18px 0; }
+.flow-list span, .flow-list small { color: #98c0b9; font-family: var(--mono); font-size: .66rem; }
+.flow-list strong { font-size: 1rem; }
+.footer { color: var(--muted); display: flex; font-family: var(--mono); font-size: .65rem; justify-content: space-between; margin: 0 auto; max-width: 1280px; padding: 25px 5vw; }
+@media (max-width: 720px) {
+  .topbar { padding: 18px 6vw; }
+  .top-link { font-size: .65rem; }
+  .hero { display: block; min-height: auto; padding: 68px 6vw 62px; }
+  h1 { font-size: clamp(3rem, 15vw, 5rem); }
+  .hero-stamp { margin-top: 54px; max-width: 270px; }
+  .dashboard, .areas { padding: 50px 6vw; }
+  .section-heading { align-items: start; display: block; }
+  .section-note { margin-top: 18px; }
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .area-grid { grid-template-columns: 1fr; }
+  .how-it-works { display: block; padding: 56px 6vw; }
+  .flow-list { margin-top: 42px; }
+  .flow-list li { grid-template-columns: 30px 1fr; }
+  .flow-list small { grid-column: 2; margin-top: -12px; }
+  .footer { display: block; padding: 23px 6vw; }
+  .footer span { display: block; margin-bottom: 8px; }
+}
