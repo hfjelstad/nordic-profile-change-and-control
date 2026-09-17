@@ -18,7 +18,7 @@ Issue form
 
 ## Contributing
 
-Contributors do not need to edit RDF, SHACL or XML. Start with an Issue Form:
+Contributors do not need to edit RDF, SHACL or XML, and they do not need to fill in the Issue Form by hand. The form defines the target shape of a proposal, not the required interface: describing a change in plain language to a maintainer, or to an assistant that files the issue in that shape, is an equally valid way in. Start with one of:
 
 - New profile decision
 - Change an existing decision
