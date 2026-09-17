@@ -1,1 +1,3 @@
 .github/scripts/validation-result.md
+__pycache__/
+*.pyc

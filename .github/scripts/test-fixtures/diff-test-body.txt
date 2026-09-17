@@ -1,0 +1,48 @@
+### XML example
+
+```xml
+<Siri version="2.1" xmlns="http://www.siri.org.uk/siri">
+  <ServiceDelivery>
+    <ResponseTimestamp>2026-05-11T12:22:41.913627+03:00</ResponseTimestamp>
+    <ProducerRef>FSR</ProducerRef>
+    <FacilityMonitoringDelivery version="2.1">
+      <ResponseTimestamp>2026-05-11T12:22:41.913627+03:00</ResponseTimestamp>
+      <FacilityCondition>
+        <FacilityRef>FSR:Equipment:1</FacilityRef>
+        <FacilityStatus>
+          <Status>available</Status>
+        </FacilityStatus>
+      </FacilityCondition>
+      <FacilityCondition>
+        <FacilityRef>FSR:Equipment:2</FacilityRef>
+        <FacilityStatus>
+          <Status>notAvailable</Status>
+        </FacilityStatus>
+        <Remedy>
+          <RemedyType>repair</RemedyType>
+          <Description>Maintenance ongoing</Description>
+          <RemedyPeriod>
+            <StartTime>2026-05-11T00:00:00+03:00</StartTime>
+            <EndTime>2026-05-14T00:00:00+03:00</EndTime>
+          </RemedyPeriod>
+        </Remedy>
+        <ValidityPeriod>
+          <StartTime>2026-05-11T00:00:00+03:00</StartTime>
+        </ValidityPeriod>
+      </FacilityCondition>
+    </FacilityMonitoringDelivery>
+  </ServiceDelivery>
+</Siri>
+```
+
+### XML file
+
+_No response_
+
+### Description
+
+Test of ontology diff enrichment.
+
+### Existing decision ID
+
+_No response_
