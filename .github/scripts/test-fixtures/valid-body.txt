@@ -1,0 +1,22 @@
+### XML example
+
+```xml
+<Siri version="2.1" xmlns="http://www.siri.org.uk/siri">
+  <ServiceDelivery>
+    <ResponseTimestamp>2026-05-11T12:22:41.913627+03:00</ResponseTimestamp>
+    <ProducerRef>FSR</ProducerRef>
+  </ServiceDelivery>
+</Siri>
+```
+
+### XML file
+
+_No response_
+
+### Description
+
+This is a test description.
+
+### Existing decision ID
+
+_No response_

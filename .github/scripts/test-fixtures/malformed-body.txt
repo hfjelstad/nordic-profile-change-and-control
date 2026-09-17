@@ -1,0 +1,17 @@
+### XML example
+
+```xml
+<Siri version="2.1"><ServiceDelivery></Siri>
+```
+
+### XML file
+
+_No response_
+
+### Description
+
+Malformed XML (mismatched closing tag), should fail.
+
+### Existing decision ID
+
+_No response_

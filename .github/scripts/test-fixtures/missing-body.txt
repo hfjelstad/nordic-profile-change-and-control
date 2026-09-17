@@ -1,0 +1,15 @@
+### XML example
+
+_No response_
+
+### XML file
+
+_No response_
+
+### Description
+
+Missing XML entirely, should fail.
+
+### Existing decision ID
+
+_No response_

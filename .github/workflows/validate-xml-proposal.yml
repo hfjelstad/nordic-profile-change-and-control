@@ -1,0 +1,43 @@
+name: Validate XML proposal
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  validate:
+    # Only run for issues created from the xml-proposal.yml form. Matching on
+    # the field heading is more robust than matching on labels, since labels
+    # can be changed by maintainers without the workflow needing an update.
+    if: contains(github.event.issue.body, '### XML example')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate issue body
+        id: validate
+        continue-on-error: true
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: python .github/scripts/validate_issue_xml.py
+
+      - name: Comment result
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GH_REPO: ${{ github.repository }}
+        run: gh issue comment "$ISSUE_NUMBER" --body-file .github/scripts/validation-result.md
+
+      - name: Fail the job if the check failed
+        if: steps.validate.outcome == 'failure'
+        run: exit 1
