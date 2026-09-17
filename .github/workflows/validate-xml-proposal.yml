@@ -24,11 +24,19 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Check out official SIRI schema (pinned tag, not vendored)
+        uses: actions/checkout@v4
+        with:
+          repository: TransmodelEcosystem/SIRI
+          ref: v2.2
+          path: external/siri-schema
+
       - name: Validate issue body
         id: validate
         continue-on-error: true
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
+          SIRI_XSD_ROOT: ${{ github.workspace }}/external/siri-schema/xsd
         run: python .github/scripts/validate_issue_xml.py
 
       - name: Comment result

@@ -1,11 +1,11 @@
-"""Check that a proposal issue actually contains a usable XML example, and
-enrich it with a mechanical diff against the current Nordic SIRI ontology.
+"""Check that a proposal issue actually contains a usable XML example,
+validate it against the official SIRI XSD, and enrich it with a mechanical
+diff against the current Nordic SIRI ontology.
 
-Well-formedness check: schema-agnostic by design. This repository does not
-yet have an agreed, mirrored source for the SIRI/NeTEx XSD (see
-docs/SIRI-PROFILE-BASELINE.md), so full schema conformance is not checked
-here. That is a separate, later step once the official-source question is
-resolved.
+Schema validation: against a pinned tag of the official TransmodelEcosystem/SIRI
+repository, checked out fresh by the CI workflow (not vendored into this
+repository; see docs/SIRI-PROFILE-BASELINE.md). Only runs for a <Siri> root
+element; NeTEx examples are not checked yet.
 
 Ontology diff: purely mechanical comparison of element names against the
 Nordic SIRI ontology sources. It does not decide anything; that is still a
@@ -20,6 +20,7 @@ import xml.etree.ElementTree as ET
 
 from issue_body import get_xml_text
 from ontology_diff import build_report
+from xsd_validate import validate as xsd_validate
 
 RESULT_PATH = os.path.join(os.path.dirname(__file__), "validation-result.md")
 
@@ -48,11 +49,21 @@ def main() -> int:
         valid, error = well_formed(xml_text)
         if valid:
             lines.append(f"The XML from the {source} is well-formed.")
+
+            attempted, schema_valid, schema_errors = xsd_validate(xml_text)
             lines.append("")
-            lines.append(
-                "This only checks that the XML parses. It does not yet check it "
-                "against the SIRI or NeTEx XSD; that step is not wired into CI yet."
-            )
+            lines.append("## Schema validation (official SIRI XSD)")
+            lines.append("")
+            if not attempted:
+                lines.append(f"Not checked: {schema_errors[0]}")
+            elif schema_valid:
+                lines.append("Valid against the official SIRI schema (TransmodelEcosystem/SIRI, pinned tag).")
+            else:
+                ok = False
+                lines.append("Not valid against the official SIRI schema (TransmodelEcosystem/SIRI, pinned tag):")
+                lines.append("")
+                lines.append("```\n" + "\n".join(schema_errors) + "\n```")
+
             lines.append(build_report(xml_text))
         else:
             ok = False

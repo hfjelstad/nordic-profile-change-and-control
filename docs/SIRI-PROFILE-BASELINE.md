@@ -9,6 +9,8 @@ This repository uses the following sources as the initial baseline for SIRI-rela
 | [Nordic SIRI Profile](https://entur.atlassian.net/wiki/spaces/PUBLIC/pages/637370420/Nordic+SIRI+Profile) | Human-readable Nordic profile documentation, examples and historical PDF exports | Nordic profile only; version and section must be cited for each decision |
 | [Nordic SIRI Ontology](https://github.com/entur/nordic-siri-ontology) | Machine-readable Nordic vocabulary, relationships and SHACL constraints | Nordic localisation of SIRI; downstream service and organisation layers must import it rather than modify it |
 | [SIRI Ontology Generator](https://github.com/hfjelstad/siri-ontology-generator) | Deterministic XSD -> RDF/OWL/Turtle generator | A local checkout exists at `Documents/SIRI Ontology`; its generated output is based on the pinned `TransmodelEcosystem/SIRI` submodule |
+| [TransmodelEcosystem/SIRI](https://github.com/TransmodelEcosystem/SIRI) | Official SIRI XSD (CEN/TS 15531, EN 15531), maintained by the CEN working group | Identified as the authoritative schema source. Pin to tag `v2.2` (root schema `xsd/siri.xsd`, includes SIRI-FM as Part 4). Not vendored into this repository; CI checks it out fresh at a pinned tag rather than committing a copy, since the repository has no stated license and redistribution has not been decided |
+| [TransmodelEcosystem/NeTEx](https://github.com/TransmodelEcosystem/NeTEx) | Official NeTEx XSD (CEN/TS 16614), maintained by the CEN working group | Identified as the authoritative schema source. Pin to tag `v2.0.0` (root schema `xsd/NeTEx_publication.xsd`). GPL-3.0 licensed; not vendored into this repository for the same reason as SIRI, and any future vendoring would need to account for that license |
 
 The local generator checkout contains `vendor/SIRI`, pinned to the `v2.2` branch, and its generated root currently reports `owl:versionInfo "v2.2-6-g7b1463b"`. It also generates a dedicated `siri-fm.ttl` module from `vendor/SIRI/xsd/siri_facilityMonitoring_service.xsd`. This is a useful technical schema and vocabulary source, but it is not by itself a European SIRI profile.
 
@@ -21,6 +23,8 @@ TransmodelEcosystem/SIRI XSD v2.2 (schema source)
 	-> European SIRI profile (separate profile source, to be identified)
 	-> Nordic SIRI Ontology / profile constraints
 ```
+
+CI in this repository validates submitted XML examples for well-formedness unconditionally, and for schema conformance against a pinned checkout of `TransmodelEcosystem/SIRI@v2.2`. See `.github/workflows/validate-xml-proposal.yml` and `.github/scripts/xsd_validate.py`.
 
 ## European profile gap
 
@@ -53,10 +57,9 @@ For the Finnish SIRI-FM material, this means the NeTEx facility registry, SIRI-F
 
 ## Open baseline action
 
-Before accepting a decision that depends on a European SIRI profile, create a clarification or discovery issue to confirm:
+The SIRI and NeTEx *schema* sources are now identified and pinned (see above). Still open, before accepting a decision that depends on a European SIRI profile:
 
-- the authoritative European SIRI profile and version;
-- which versioned SIRI XSD is the corresponding technical schema source;
+- the authoritative European SIRI **profile** document, distinct from the bare XSD (the CEN/TS document may add constraints beyond the schema itself);
 - the generator commit and exact generated ontology version;
 - how the European constraints map to the Nordic ontology namespaces;
 - which Nordic rules are stricter than, equal to or extensions of the European baseline.
