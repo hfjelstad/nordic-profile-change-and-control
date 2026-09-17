@@ -18,10 +18,9 @@ Issue form
 
 ## Contributing
 
-Contributors do not need to edit RDF, SHACL or XML, and they do not need to fill in the Issue Form by hand. The form defines the target shape of a proposal, not the required interface: describing a change in plain language to a maintainer, or to an assistant that files the issue in that shape, is an equally valid way in. Start with one of:
+Contributors do not need to edit RDF, SHACL or XML syntax rules, and they do not need to fill in the Issue Form by hand. The form defines the target shape of a proposal, not the required interface: describing a change in plain language to a maintainer, or to an assistant that files the issue in that shape, is an equally valid way in. The simplest path is one form:
 
-- New profile decision
-- Change an existing decision
+- Propose or change a rule (XML example) - an XML fragment plus a description, for a new rule or a change to an existing decision
 - Clarification
 - Data package proposal
 
@@ -53,8 +52,7 @@ Absence of a decision does not mean that a feature is allowed. Unassessed subjec
 ```text
 .github/ISSUE_TEMPLATE/   Issue Forms for contributors
   config.yml
-  new-decision.yml
-  change-decision.yml
+  xml-proposal.yml
   clarification.yml
   data-package.yml
 decisions/                Accepted and versioned decision files

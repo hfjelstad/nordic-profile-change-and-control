@@ -1,0 +1,31 @@
+name: Propose or change a rule (XML example)
+description: The simplest way in. Paste an XML example and describe what it should mean. Works for a brand new rule or a change to an existing decision.
+labels: [decision, proposed]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        GitHub assigns the issue number after submission. Use that number as the tracking ID, for example #123.
+
+        This is the low-friction entry point: an XML example plus a description. The CCB will translate this into the exact profile rule and, if accepted, into a decision file. You do not need to know QNames, cardinalities or SHACL.
+  - type: textarea
+    id: xml-example
+    attributes:
+      label: XML example
+      description: A SIRI or NeTEx XML fragment showing what should be allowed, required or excluded. Include enough surrounding context (parent element, namespaces) to be validated against the schema.
+      render: xml
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What should this example mean, and why should it be common Nordic practice? Say whether this is a new rule or a change to something already decided.
+    validations:
+      required: true
+  - type: input
+    id: existing-decision-id
+    attributes:
+      label: Existing decision ID
+      description: Leave blank if this is a new rule. Fill in if this changes an already accepted decision.
+      placeholder: NP-0001 / SIRI-0001
