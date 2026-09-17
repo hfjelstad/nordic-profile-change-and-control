@@ -50,7 +50,9 @@ The bundle can be submitted as one parent GitHub issue with six linked child iss
 
 **Evidence:** PDF pages 5–8 and example on page 20.
 
-**Open questions:** Confirm the final code lists, the spelling of `CountedFeatureUnit` versus the example's `CountingFeatureUnit`, and whether trend is part of the Nordic contract or only the base schema.
+**Open questions:** Whether trend is part of the Nordic contract or only the base schema.
+
+**Resolved by XSD validation:** The PDF's own example on page 20 uses `CountingFeatureUnit`, which does not exist in the SIRI XSD (`siri.xsd`). The schema only defines `CountedFeatureUnit`. This is confirmed mechanically, not by interpretation — see `proposals/fixtures/FM-006/invalid-01-wrong-counted-feature-unit-name.xml` and the corrected `valid-06-parking-delivery-monitoring.xml`, both checked with `proposals/fixtures/validate_examples.py`. The decision should use `CountedFeatureUnit`.
 
 **Discussion feedback:** `HolidayType` was raised as a concern (Ulf, captured by Håkon Fjelstad). It overlaps with `DayType` in a confusing way since both are cardinality `0:*` on the same monitoring validity condition, and it is unclear whether holiday-calendar semantics belong in a SIRI-FM monitoring structure at all rather than a simpler facility-status format. This should be resolved before `HolidayType` is accepted as part of the Nordic profile; excluding it, or replacing it with a simpler day-type-only model, are both open options.
 
@@ -88,7 +90,9 @@ The bundle can be submitted as one parent GitHub issue with six linked child iss
 
 **Evidence:** PDF pages 16–20.
 
-**Open questions:** Confirm whether example timestamps and identifiers should be replaced with deterministic fixtures, and define expected validation results for each example.
+**Open questions:** Confirm whether example timestamps and identifiers should be replaced with deterministic fixtures.
+
+**Done, mechanically:** The six examples are committed under `proposals/fixtures/FM-006/` as `valid-*.xml` fixtures, plus one `invalid-*.xml` fixture. `proposals/fixtures/validate_examples.py` validates every fixture against a local copy of the SIRI XSD (`siri.xsd`) and checks that valid/invalid fixtures produce the expected result. This is a real, deterministic pass/fail gate — no interpretation involved. Running it against the vendored SIRI XSD found one real defect in the source PDF (see FM-003) before any CCB review time was spent on it. The XSD itself is not vendored into this repository; point `--schema-root` at a local checkout, for example the `SIRI/xsd` folder used to build the Nordic SIRI ontology.
 
 ## Suggested review order
 

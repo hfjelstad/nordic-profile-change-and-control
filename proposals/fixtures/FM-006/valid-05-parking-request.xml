@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Siri version="2.1" xmlns="http://www.siri.org.uk/siri" xmlns:ifopt="http://www.ifopt.org.uk/ifopt"
+xmlns:datex="http://datex2.eu/schema/2_0RC1/2_0" xmlns:gml="http://www.opengis.net/gml/3.2"
+xmlns:acsb="http://www.ifopt.org.uk/acsb">
+  <ServiceRequest>
+    <ServiceRequestContext>
+      <Language>en</Language>
+    </ServiceRequestContext>
+    <RequestTimestamp>2026-05-11T14:28:20.808917+03:00</RequestTimestamp>
+    <RequestorRef>TEST</RequestorRef>
+    <FacilityMonitoringRequest version="2.1">
+      <RequestTimestamp>2026-05-11T14:28:20.808917+03:00</RequestTimestamp>
+      <FacilityRef>FSR:Parking:1</FacilityRef>
+    </FacilityMonitoringRequest>
+  </ServiceRequest>
+</Siri>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+Expected validation result: INVALID against siri.xsd.
+This reproduces the exact element name used in the SIRI-FM v0.7 PDF example
+(page 20), "CountingFeatureUnit", which the schema does not define. The schema
+only defines "CountedFeatureUnit". See proposals/SIRI-FM-v0.7-PROPOSALS.md, FM-003.
+-->
+<Siri version="2.1" xmlns="http://www.siri.org.uk/siri" xmlns:ifopt="http://www.ifopt.org.uk/ifopt"
+xmlns:datex="http://datex2.eu/schema/2_0RC1/2_0" xmlns:gml="http://www.opengis.net/gml/3.2"
+xmlns:acsb="http://www.ifopt.org.uk/acsb">
+  <ServiceDelivery>
+    <ResponseTimestamp>2026-05-11T14:28:20.776389+03:00</ResponseTimestamp>
+    <ProducerRef>FSR</ProducerRef>
+    <FacilityMonitoringDelivery version="2.1">
+      <ResponseTimestamp>2026-05-11T14:28:20.776389+03:00</ResponseTimestamp>
+      <FacilityCondition>
+        <FacilityRef>FSR:Parking:1</FacilityRef>
+        <FacilityStatus>
+          <Status>available</Status>
+        </FacilityStatus>
+        <MonitoredCounting>
+          <CountingType>availabilityCount</CountingType>
+          <CountingFeatureUnit>bays</CountingFeatureUnit>
+          <Count>100</Count>
+        </MonitoredCounting>
+      </FacilityCondition>
+    </FacilityMonitoringDelivery>
+  </ServiceDelivery>
+</Siri>

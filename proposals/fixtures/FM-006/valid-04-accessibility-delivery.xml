@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Siri version="2.1" xmlns="http://www.siri.org.uk/siri" xmlns:ifopt="http://www.ifopt.org.uk/ifopt"
+xmlns:datex="http://datex2.eu/schema/2_0RC1/2_0" xmlns:gml="http://www.opengis.net/gml/3.2"
+xmlns:acsb="http://www.ifopt.org.uk/acsb">
+  <ServiceDelivery>
+    <ResponseTimestamp>2026-05-11T13:52:14.824382+03:00</ResponseTimestamp>
+    <ProducerRef>FSR</ProducerRef>
+    <FacilityMonitoringDelivery version="2.1">
+      <ResponseTimestamp>2026-05-11T13:52:14.824382+03:00</ResponseTimestamp>
+      <FacilityCondition>
+        <FacilityRef>FSR:Equipment:2</FacilityRef>
+        <FacilityStatus>
+          <Status>available</Status>
+          <AccessibilityAssessment>
+            <acsb:MobilityImpairedAccess>true</acsb:MobilityImpairedAccess>
+            <acsb:Suitabilities>
+              <acsb:Suitability>
+                <acsb:Suitable>suitable</acsb:Suitable>
+                <acsb:UserNeed>
+                  <acsb:MobilityNeed>wheelchair</acsb:MobilityNeed>
+                </acsb:UserNeed>
+              </acsb:Suitability>
+            </acsb:Suitabilities>
+          </AccessibilityAssessment>
+        </FacilityStatus>
+      </FacilityCondition>
+    </FacilityMonitoringDelivery>
+  </ServiceDelivery>
+</Siri>

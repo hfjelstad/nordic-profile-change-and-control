@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Siri version="2.1" xmlns="http://www.siri.org.uk/siri" xmlns:ifopt="http://www.ifopt.org.uk/ifopt"
+xmlns:datex="http://datex2.eu/schema/2_0RC1/2_0" xmlns:gml="http://www.opengis.net/gml/3.2"
+xmlns:acsb="http://www.ifopt.org.uk/acsb">
+  <ServiceDelivery>
+    <ResponseTimestamp>2026-05-11T12:22:41.913627+03:00</ResponseTimestamp>
+    <ProducerRef>FSR</ProducerRef>
+    <FacilityMonitoringDelivery version="2.1">
+      <ResponseTimestamp>2026-05-11T12:22:41.913627+03:00</ResponseTimestamp>
+      <FacilityCondition>
+        <FacilityRef>FSR:Equipment:1</FacilityRef>
+        <FacilityStatus>
+          <Status>available</Status>
+        </FacilityStatus>
+      </FacilityCondition>
+      <FacilityCondition>
+        <FacilityRef>FSR:Equipment:2</FacilityRef>
+        <FacilityStatus>
+          <Status>notAvailable</Status>
+        </FacilityStatus>
+        <Remedy>
+          <RemedyType>repair</RemedyType>
+          <Description>Maintenance ongoing</Description>
+          <RemedyPeriod>
+            <StartTime>2026-05-11T00:00:00+03:00</StartTime>
+            <EndTime>2026-05-14T00:00:00+03:00</EndTime>
+          </RemedyPeriod>
+        </Remedy>
+        <ValidityPeriod>
+          <StartTime>2026-05-11T00:00:00+03:00</StartTime>
+        </ValidityPeriod>
+      </FacilityCondition>
+      <FacilityCondition>
+        <FacilityRef>FSR:Parking:1</FacilityRef>
+        <FacilityStatus>
+          <Status>available</Status>
+        </FacilityStatus>
+      </FacilityCondition>
+    </FacilityMonitoringDelivery>
+  </ServiceDelivery>
+</Siri>
