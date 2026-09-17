@@ -31,6 +31,9 @@ jobs:
           ref: v2.2
           path: external/siri-schema
 
+      - name: Install Python dependencies
+        run: pip install lxml
+
       - name: Validate issue body
         id: validate
         continue-on-error: true

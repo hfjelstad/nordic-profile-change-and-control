@@ -34,6 +34,19 @@ def well_formed(xml_text: str):
 
 
 def main() -> int:
+    try:
+        return run()
+    except Exception as error:  # last-resort safety net so a comment is always posted
+        with open(RESULT_PATH, "w", encoding="utf-8") as handle:
+            handle.write(
+                "## Automated XML check\n\n"
+                f"The check itself failed unexpectedly: `{error}`. Please report this as a bug "
+                "in the CCB repository; it is not a statement about your proposal."
+            )
+        return 1
+
+
+def run() -> int:
     body = os.environ.get("ISSUE_BODY", "")
     source, xml_text = get_xml_text(body)
 
