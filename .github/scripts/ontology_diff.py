@@ -1,20 +1,20 @@
 """Compare element names used in a submitted XML example against the
-current Nordic SIRI ontology sources.
+current Nordic SIRI or NeTEx ontology sources.
 
 This is a purely mechanical, structural comparison: it lists which element
 names are already accepted, which are declared but out of scope, and which
 are not found at all. It does NOT decide whether an unmatched element should
 be accepted; that remains a CCB decision.
 
-Currently covers SIRI only. NeTEx support would follow the same pattern
-against netex-nordic-baseline.ttl / netex-nordic.ttl if this proves useful.
+Both NeTEx and SIRI baselines use the same nordic:inProfile profile:X
+convention, just under a different namespace prefix, so this is a single
+generalised implementation driven by standards.STANDARDS.
 """
 import re
 import urllib.request
 import xml.etree.ElementTree as ET
 
-SIRI_BASELINE_URL = "https://raw.githubusercontent.com/entur/nordic-siri-ontology/main/siri-nordic-baseline.ttl"
-SIRI_PROFILE_URL = "https://raw.githubusercontent.com/entur/nordic-siri-ontology/main/siri-nordic.ttl"
+from standards import STANDARDS, detect_standard
 
 
 def fetch(url: str) -> str:
@@ -32,23 +32,25 @@ def local_element_names(xml_text: str) -> set:
     return names
 
 
-def baseline_profile_map(baseline_text: str) -> dict:
+def baseline_profile_map(baseline_text: str, prefix: str, in_scope_profile: str) -> dict:
     """Maps a local element/class name to the profile scope it is declared
-    under, e.g. "NordicSIRI" or "EnturExtension". Prefers NordicSIRI if a
-    name is declared more than once under different scopes."""
+    under, e.g. "NordicProfile"/"NordicSIRI" or "EnturExtension". Prefers the
+    in-scope profile if a name is declared more than once under different
+    scopes."""
     mapping = {}
-    for match in re.finditer(r"siri:([A-Za-z][\w-]*)\s+nordic:inProfile\s+profile:([A-Za-z][\w-]*)", baseline_text):
+    pattern = re.compile(rf"{prefix}:([A-Za-z][\w-]*)\s+nordic:inProfile\s+profile:([A-Za-z][\w-]*)")
+    for match in pattern.finditer(baseline_text):
         name, profile = match.group(1), match.group(2)
-        if name not in mapping or profile == "NordicSIRI":
+        if name not in mapping or profile == in_scope_profile:
             mapping[name] = profile
     return mapping
 
 
-def profile_status_map(profile_text: str) -> dict:
+def profile_status_map(profile_text: str, prefix: str) -> dict:
     statuses = {}
     pattern = re.compile(
-        r"(?:nordic|siri):([A-Za-z_][\w-]*)\s+a\s+(?:(?:nordic|siri):(?:Service|DataSource)|owl:Class)\s*;"
-        r"([\s\S]*?)(?=\n(?:nordic|siri):[A-Za-z_][\w-]*\s+a\s+|\Z)"
+        rf"(?:nordic|{prefix}):([A-Za-z_][\w-]*)\s+a\s+(?:(?:nordic|{prefix}):(?:Service|DataSource)|owl:Class)\s*;"
+        r"([\s\S]*?)(?=\n(?:nordic|" + prefix + r"):[A-Za-z_][\w-]*\s+a\s+|\Z)"
     )
     for match in pattern.finditer(profile_text):
         name = match.group(1)
@@ -58,12 +60,12 @@ def profile_status_map(profile_text: str) -> dict:
     return statuses
 
 
-def classify(xml_names: set, baseline_profiles: dict, status_map: dict):
+def classify(xml_names: set, baseline_profiles: dict, status_map: dict, in_scope_profile: str):
     in_scope, other_profile, other_status, unmatched = [], [], [], []
     for name in sorted(xml_names):
         if name in baseline_profiles:
             profile = baseline_profiles[name]
-            (in_scope if profile == "NordicSIRI" else other_profile).append((name, profile))
+            (in_scope if profile == in_scope_profile else other_profile).append((name, profile))
         elif name in status_map:
             other_status.append((name, status_map[name]))
         else:
@@ -72,43 +74,52 @@ def classify(xml_names: set, baseline_profiles: dict, status_map: dict):
 
 
 def build_report(xml_text: str) -> str:
+    standard = detect_standard(xml_text)
+    if standard is None:
+        return ""
+    config = STANDARDS[standard]
+
     try:
         names = local_element_names(xml_text)
-        baseline_profiles = baseline_profile_map(fetch(SIRI_BASELINE_URL))
-        status_map = profile_status_map(fetch(SIRI_PROFILE_URL))
+        baseline_profiles = baseline_profile_map(
+            fetch(config["baseline_url"]), config["ontology_prefix"], config["in_scope_profile"]
+        )
+        status_map = profile_status_map(fetch(config["profile_url"]), config["ontology_prefix"])
     except Exception as error:  # network failure or unexpected ontology format
         return (
-            "\n## Elements used vs. the current Nordic SIRI profile\n\n"
+            f"\n## Elements used vs. the current {config['ontology_label']} profile\n\n"
             f"Could not compare against the ontology sources ({error}). "
             "This is best-effort enrichment, not a required check.\n"
         )
 
-    in_scope, other_profile, other_status, unmatched = classify(names, baseline_profiles, status_map)
+    in_scope, other_profile, other_status, unmatched = classify(
+        names, baseline_profiles, status_map, config["in_scope_profile"]
+    )
 
-    lines = ["", "## Elements used vs. the current Nordic SIRI profile", ""]
+    lines = ["", f"## Elements used vs. the current {config['ontology_label']} profile", ""]
     lines.append(f"Found {len(names)} distinct element names in the example.")
 
     if in_scope:
         lines.append("")
-        lines.append("Already accepted into the shared Nordic SIRI baseline:")
+        lines.append(f"Already accepted into the shared {config['ontology_label']} baseline:")
         lines.append(", ".join(f"`{name}`" for name, _ in in_scope))
 
     if other_profile:
         lines.append("")
-        lines.append("Declared in the ontology, but under a different profile scope, not the shared Nordic baseline:")
+        lines.append("Declared in the ontology, but under a different profile scope, not the shared baseline:")
         lines.append(", ".join(f"`{name}` ({profile})" for name, profile in other_profile))
 
     if other_status:
         lines.append("")
-        lines.append("Declared in the SIRI ontology, but not in-scope (needs a decision either way):")
+        lines.append("Declared in the ontology, but not in-scope (needs a decision either way):")
         lines.append(", ".join(f"`{name}` ({status})" for name, status in other_status))
 
     if unmatched:
         lines.append("")
         lines.append(
-            "Not found as a named object in either ontology source. This can be a core SIRI "
-            "envelope element that is not modelled as its own object, or a genuinely new element "
-            "this proposal introduces:"
+            "Not found as a named object in either ontology source. This can be a core envelope "
+            "element that is not modelled as its own object, or a genuinely new element this "
+            "proposal introduces:"
         )
         lines.append(", ".join(f"`{name}`" for name in unmatched))
 

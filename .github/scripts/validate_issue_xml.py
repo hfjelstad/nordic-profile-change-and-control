@@ -1,15 +1,18 @@
 """Check that a proposal issue actually contains a usable XML example,
-validate it against the official SIRI XSD, and enrich it with a mechanical
-diff against the current Nordic SIRI ontology.
+validate it against the official SIRI or NeTEx XSD, and enrich it with a
+mechanical diff against the current Nordic ontology.
 
-Schema validation: against a pinned tag of the official TransmodelEcosystem/SIRI
+Standard (SIRI vs NeTEx) is detected automatically from the XML root element
+(<Siri> vs <PublicationDelivery>), not from a form field, so there is no
+picker and no way to mislabel a proposal (see standards.py).
+
+Schema validation: against a pinned tag of the official TransmodelEcosystem
 repository, checked out fresh by the CI workflow (not vendored into this
-repository; see docs/SIRI-PROFILE-BASELINE.md). Only runs for a <Siri> root
-element; NeTEx examples are not checked yet.
+repository; see docs/SIRI-PROFILE-BASELINE.md).
 
 Ontology diff: purely mechanical comparison of element names against the
-Nordic SIRI ontology sources. It does not decide anything; that is still a
-CCB judgement call.
+Nordic ontology sources. It does not decide anything; that is still a CCB
+judgement call.
 
 Reads the raw issue body from the ISSUE_BODY environment variable and writes
 a human-readable result to validation-result.md next to this script.
@@ -20,6 +23,7 @@ import xml.etree.ElementTree as ET
 
 from issue_body import get_xml_text
 from ontology_diff import build_report
+from standards import STANDARDS
 from xsd_validate import validate as xsd_validate
 
 RESULT_PATH = os.path.join(os.path.dirname(__file__), "validation-result.md")
@@ -63,17 +67,19 @@ def run() -> int:
         if valid:
             lines.append(f"The XML from the {source} is well-formed.")
 
-            attempted, schema_valid, schema_errors = xsd_validate(xml_text)
+            standard, attempted, schema_valid, schema_errors = xsd_validate(xml_text)
+            standard_label = STANDARDS[standard]["label"] if standard else "unknown standard"
+            source_label = STANDARDS[standard]["schema_source_label"] if standard else ""
             lines.append("")
-            lines.append("## Schema validation (official SIRI XSD)")
+            lines.append(f"## Schema validation ({standard_label})")
             lines.append("")
             if not attempted:
                 lines.append(f"Not checked: {schema_errors[0]}")
             elif schema_valid:
-                lines.append("Valid against the official SIRI schema (TransmodelEcosystem/SIRI, pinned tag).")
+                lines.append(f"Valid against the official {standard_label} schema ({source_label}).")
             else:
                 ok = False
-                lines.append("Not valid against the official SIRI schema (TransmodelEcosystem/SIRI, pinned tag):")
+                lines.append(f"Not valid against the official {standard_label} schema ({source_label}):")
                 lines.append("")
                 lines.append("```\n" + "\n".join(schema_errors) + "\n```")
 

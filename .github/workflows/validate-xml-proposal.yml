@@ -24,15 +24,30 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install Python dependencies
+        run: pip install lxml
+
+      - name: Detect standard (SIRI vs NeTEx) from the XML example
+        id: detect
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: python .github/scripts/detect_standard_step.py
+
       - name: Check out official SIRI schema (pinned tag, not vendored)
+        if: steps.detect.outputs.standard == 'siri'
         uses: actions/checkout@v4
         with:
           repository: TransmodelEcosystem/SIRI
           ref: v2.2
           path: external/siri-schema
 
-      - name: Install Python dependencies
-        run: pip install lxml
+      - name: Check out official NeTEx schema (pinned tag, not vendored)
+        if: steps.detect.outputs.standard == 'netex'
+        uses: actions/checkout@v4
+        with:
+          repository: TransmodelEcosystem/NeTEx
+          ref: v2.0.0
+          path: external/netex-schema
 
       - name: Validate issue body
         id: validate
@@ -40,6 +55,7 @@ jobs:
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
           SIRI_XSD_ROOT: ${{ github.workspace }}/external/siri-schema/xsd
+          NETEX_XSD_ROOT: ${{ github.workspace }}/external/netex-schema/xsd
         run: python .github/scripts/validate_issue_xml.py
 
       - name: Comment result
