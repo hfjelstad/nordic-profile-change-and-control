@@ -65,7 +65,7 @@ const loadProfileData = async () => {
     decisionList.replaceChildren(...(decisions.length
       ? decisions.map(({ text }, index) => listItem(String(index + 1).padStart(2, '0'), field(text, 'title') || field(text, 'id'), subject(text) || field(text, 'standard'), field(text, 'status')))
       : [Object.assign(document.createElement('li'), { className: 'register-empty', innerHTML: '<span class="list-marker">--</span><span>No decisions have been accepted yet.</span>' })]));
-    issueList.replaceChildren(...(issues.filter((issue) => !issue.pull_request).slice(0, 6).map((issue, index) => listItem(String(index + 1).padStart(2, '0'), issue.title, `Issue #${issue.number}`, issue.labels.map((label) => label.name).join(', ') || 'proposed')));
+    issueList.replaceChildren(...(issues.filter((issue) => !issue.pull_request).slice(0, 6).map((issue, index) => listItem(String(index + 1).padStart(2, '0'), issue.title, `Issue #${issue.number}`, issue.labels.map((label) => label.name).join(', ') || 'proposed'))));
     if (!issueList.children.length) showMessage(issueList, 'No open proposals at the moment.');
   } catch (error) {
     document.querySelector('#accepted-count').textContent = '—';
