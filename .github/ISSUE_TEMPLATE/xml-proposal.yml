@@ -8,14 +8,24 @@ body:
         GitHub assigns the issue number after submission. Use that number as the tracking ID, for example #123.
 
         This is the low-friction entry point: an XML example plus a description. The CCB will translate this into the exact profile rule and, if accepted, into a decision file. You do not need to know QNames, cardinalities or SHACL.
+
+        You must provide the XML example either pasted below or as an attached file, not both empty.
   - type: textarea
     id: xml-example
     attributes:
       label: XML example
-      description: A SIRI or NeTEx XML fragment showing what should be allowed, required or excluded. Include enough surrounding context (parent element, namespaces) to be validated against the schema.
+      description: A SIRI or NeTEx XML fragment showing what should be allowed, required or excluded. Include enough surrounding context (parent element, namespaces) to be validated against the schema. Leave blank if you are attaching a file below instead.
       render: xml
     validations:
-      required: true
+      required: false
+  - type: upload
+    id: xml-file
+    attributes:
+      label: XML file
+      description: Attach the example as a .xml file instead of pasting it above. Either the pasted example or this file is required.
+    validations:
+      required: false
+      accept: ".xml"
   - type: textarea
     id: description
     attributes:
