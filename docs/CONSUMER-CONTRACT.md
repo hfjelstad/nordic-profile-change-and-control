@@ -11,6 +11,7 @@ The issue form is for discussion. The decision file is the normative input. Free
 | `id` | Stable identifier, for example `NP-0001` or `SIRI-0001` |
 | `standard` | `netex`, `siri`, `both` or `package` |
 | `profile` | Target profile identifier |
+| `profileVersion` | Source profile or protocol version the decision applies to |
 | `status` | Only `accepted` or `implemented` is consumable as a normative rule |
 | `subject` | Exact target in the source standard |
 | `decision.type` | `required`, `optional`, `excluded`, `conditional`, `national` or `informative` |
@@ -31,6 +32,8 @@ subject:
 
 The consumer needs the exact generated property URI or a stable QName. A human label such as `ParentSiteRef` is not sufficient.
 
+For cross-standard decisions, `subject` should also identify the request and delivery message, and the reference target used to resolve identifiers such as a SIRI `FacilityRef` against a NeTEx facility registry.
+
 Supported first-generation rule fields should include:
 
 ```yaml
@@ -42,6 +45,10 @@ decision:
     class: null
     datatype: null
     in: []
+    condition: null
+    codes: []
+    timing: null
+    reference: null
 ```
 
 The same shape can express a required property:

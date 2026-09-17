@@ -1,8 +1,12 @@
 name: New profile decision
 description: Propose a new Nordic decision for NeTEx, SIRI or a data package.
-title: "[NEW] "
+title: ""
 labels: [decision, proposed]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        GitHub assigns the issue number after submission. Use that number as the tracking ID, for example #123.
   - type: markdown
     attributes:
       value: |
@@ -19,11 +23,27 @@ body:
     validations:
       required: true
   - type: input
+    id: profile-version
+    attributes:
+      label: Profile and version
+      description: Identify the profile and version this request is based on.
+      placeholder: SIRI-FM v0.7 / SIRI 2.1
+    validations:
+      required: true
+  - type: input
     id: subject
     attributes:
       label: Subject
-      description: Class, property, service, message or package element.
+      description: Exact class, property, service, message or package element. Use a QName, URI or XML element where available.
       placeholder: StopPlace.parentSiteRef
+    validations:
+      required: true
+  - type: textarea
+    id: protocol-targets
+    attributes:
+      label: Protocol targets and identifier mapping
+      description: List the exact NeTEx and/or SIRI targets, including request/delivery messages and how identifiers such as FacilityRef resolve.
+      placeholder: "SIRI FacilityMonitoringDelivery -> NeTEx Equipment id FSR:Equipment:1"
     validations:
       required: true
   - type: dropdown
@@ -44,14 +64,14 @@ body:
     id: proposal
     attributes:
       label: Proposed rule
-      description: State what should be allowed, required or excluded.
+      description: State what should be allowed, required or excluded. Include cardinality, code values, timing, conditions and reference rules.
     validations:
       required: true
   - type: textarea
     id: rationale
     attributes:
       label: Rationale and evidence
-      description: Explain why this should be common Nordic practice. Add links or examples if available.
+      description: Explain why this should be common Nordic practice. Cite document version, section and page for supplied specifications or examples.
     validations:
       required: true
   - type: checkboxes
@@ -67,7 +87,14 @@ body:
     id: example
     attributes:
       label: Example data
-      description: Add a small example or link. Avoid confidential data.
+      description: Add valid and invalid examples, with the expected validation result. Avoid confidential data.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Compatibility and implementation impact
+      description: Describe affected producers, consumers, profile versions and whether existing data or implementations break.
+    validations:
+      required: true
   - type: input
     id: proposer
     attributes:

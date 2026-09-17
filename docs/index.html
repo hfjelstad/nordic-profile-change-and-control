@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Overview of the Nordic Profile decisions for NeTEx, SIRI and data packages.">
+  <meta name="description" content="Readable register of Nordic Profile decisions for NeTEx, SIRI and data packages.">
   <title>Nordic Profile CCB</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,15 +16,15 @@
       <span class="brand-mark" aria-hidden="true">NP</span>
       <span>Nordic Profile <strong>CCB</strong></span>
     </a>
-    <a class="top-link" href="https://github.com/hfjelstad/nordic-profile-change-and-control" target="_blank" rel="noreferrer">Repository <span aria-hidden="true">↗</span></a>
+    <a class="top-link" href="profile.html">Profile <span aria-hidden="true">→</span></a>
   </header>
 
   <main>
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow">Change and Control Board</p>
-        <h1>One shared view of the Nordic Profile.</h1>
-        <p class="hero-intro">Decisions for NeTEx, SIRI and Nordic data packages, gathered in one place for the people who use and govern them.</p>
+        <h1>The readable Nordic Profile.</h1>
+        <p class="hero-intro">A shared register of decisions for NeTEx, SIRI and Nordic data packages. Ontologies and validation rules are generated from this human-readable record.</p>
         <a class="primary-action" href="https://github.com/hfjelstad/nordic-profile-change-and-control/issues/new?template=new-decision.yml" target="_blank" rel="noreferrer">Propose a change <span aria-hidden="true">↗</span></a>
         <p class="action-note">You will be taken to a short GitHub form. A GitHub account is required to submit it.</p>
       </div>
@@ -46,7 +46,7 @@
       </div>
       <div class="summary-grid">
         <article class="summary-card summary-card-accent">
-          <span class="summary-number">0</span>
+          <span class="summary-number" id="accepted-count">...</span>
           <span class="summary-label">Accepted decisions</span>
         </article>
         <article class="summary-card">
@@ -58,8 +58,55 @@
           <span class="summary-label">Countries in scope</span>
         </article>
         <article class="summary-card">
-          <span class="summary-number">0</span>
+          <span class="summary-number" id="open-count">...</span>
           <span class="summary-label">Open decisions shown</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="workspace" aria-labelledby="workspace-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">The working register</p>
+          <h2 id="workspace-title">Follow the loop</h2>
+        </div>
+        <p class="section-note">The decision register is the product. Technical artefacts support it in the background.</p>
+      </div>
+      <div class="loop-strip" aria-label="Closed feedback loop">
+        <a class="loop-step loop-step-link loop-step-current" href="profile.html"><span>01</span><strong>Profile</strong><small>Readable current view</small></a>
+        <span class="loop-arrow" aria-hidden="true">→</span>
+        <a class="loop-step loop-step-link" href="https://github.com/hfjelstad/nordic-profile-change-and-control/issues/new?template=new-decision.yml" target="_blank" rel="noreferrer"><span>02</span><strong>Propose change</strong><small>Issue and evidence</small></a>
+        <span class="loop-arrow" aria-hidden="true">→</span>
+        <div class="loop-step"><span>03</span><strong>Decision</strong><small>Accepted profile rule</small></div>
+        <span class="loop-arrow" aria-hidden="true">→</span>
+        <div class="loop-step"><span>04</span><strong>Update ontology</strong><small>Generate technical layer</small></div>
+        <span class="loop-arrow" aria-hidden="true">→</span>
+        <a class="loop-step loop-step-link" href="profile.html"><span>05</span><strong>New profile</strong><small>Readable view</small></a>
+      </div>
+      <div class="register-grid">
+        <article class="register-panel">
+          <div class="panel-heading"><h3>Decisions</h3><span class="panel-count" id="decision-count">...</span></div>
+          <ul class="register-list" id="decision-list">
+            <li class="register-empty"><span class="list-marker">--</span><span>Loading the decision register...</span></li>
+          </ul>
+          <span class="panel-link panel-link-static">Accepted and versioned profile rules</span>
+        </article>
+        <article class="register-panel">
+          <div class="panel-heading"><h3>Incoming proposals</h3><span class="panel-count" id="issue-count">...</span></div>
+          <ul class="register-list" id="issue-list">
+            <li class="register-empty"><span class="list-marker">--</span><span>Loading current proposals...</span></li>
+          </ul>
+          <span class="panel-link panel-link-static">Discussion that may become profile rules</span>
+        </article>
+        <article class="register-panel">
+          <div class="panel-heading"><h3>Profile layers</h3><span class="panel-count">04</span></div>
+          <ul class="register-list">
+            <li><span class="list-marker">01</span><span><strong>Standard schema</strong><small>Technical vocabulary and structure</small></span></li>
+            <li><span class="list-marker">02</span><span><strong>European profile</strong><small>Normative source when identified</small></span></li>
+            <li><span class="list-marker">03</span><span><strong>Nordic profile</strong><small>Shared rules decided by the CCB</small></span></li>
+            <li><span class="list-marker">04</span><span><strong>National or local</strong><small>Stricter implementation choices</small></span></li>
+          </ul>
+          <span class="panel-link panel-link-static">Presented here as one readable profile</span>
         </article>
       </div>
     </section>
@@ -98,8 +145,8 @@
     <section class="how-it-works" aria-labelledby="flow-title">
       <div class="flow-intro">
         <p class="eyebrow">From question to rule</p>
-        <h2 id="flow-title">The CCB keeps the decision human-readable.</h2>
-        <p>People start with a short proposal. The board discusses it in GitHub. Only an accepted decision becomes part of the versioned profile that technical repositories consume.</p>
+        <h2 id="flow-title">The decision is the product.</h2>
+        <p>People start with a short proposal. The board discusses it in GitHub. Only an accepted, readable decision becomes part of the versioned profile that technical repositories consume.</p>
       </div>
       <ol class="flow-list">
         <li><span>01</span><strong>Propose</strong><small>Describe the change in plain language.</small></li>

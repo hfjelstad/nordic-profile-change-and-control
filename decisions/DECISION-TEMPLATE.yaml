@@ -3,11 +3,16 @@ title: Replace with a short decision title
 status: proposed
 standard: netex # netex | siri | both | package
 profile: nordic-core
+profileVersion: null
 subject:
   class: netex:StopPlace
   property: netex:parentSiteRef
   service: null
   message: null
+  qname: null
+  request: null
+  delivery: null
+  referenceTarget: null
 decision:
   type: deferred # required | optional | excluded | conditional | national | informative
   rule:
@@ -16,6 +21,10 @@ decision:
     class: null
     datatype: null
     in: []
+    condition: null
+    codes: []
+    timing: null
+    reference: null
 rationale: >-
   Explain the decision in language that domain experts and implementers can both understand.
 scope:

@@ -1,0 +1,56 @@
+bundleId: SIRI-FM-v0.7-BUNDLE
+kind: proposal-bundle
+status: proposed
+standard: siri
+profile: SIRI-FM
+profileVersion: v0.7
+source:
+  document: SIRI-FM — The Service Interface for Real Time Information - Facility Monitoring
+  version: v0.7
+  lastChanged: 2026-05-21
+  pages: 20
+  suppliedAs: PDF
+tracking:
+  parentIssue: null
+  childIssues: []
+  note: GitHub issue numbers are tracking IDs. They are intentionally separate from stable decision IDs.
+handling:
+  parentIssuePurpose: Coordinate review of the PDF-derived proposal set and shared questions.
+  childIssuePurpose: Each child can be accepted, rejected, deferred or split without changing the other children.
+  acceptanceRule: No child proposal becomes normative until it has its own accepted decision record.
+proposals:
+  - key: FM-001
+    title: FacilityMonitoringDelivery and FacilityCondition structure
+    status: proposed
+    decisionId: null
+    issue: null
+  - key: FM-002
+    title: Facility status and remedy semantics
+    status: proposed
+    decisionId: null
+    issue: null
+  - key: FM-003
+    title: MonitoredCounting and monitoring information
+    status: proposed
+    decisionId: null
+    issue: null
+  - key: FM-004
+    title: Accessibility, limitations and suitability
+    status: proposed
+    decisionId: null
+    issue: null
+  - key: FM-005
+    title: Facility registry, NeTEx references and feature vocabulary
+    status: proposed
+    decisionId: null
+    issue: null
+  - key: FM-006
+    title: SIRI-FM examples as validation fixtures
+    status: proposed
+    decisionId: null
+    issue: null
+openQuestions:
+  - Confirm the authoritative European SIRI profile and version behind the Nordic SIRI-FM document.
+  - Confirm whether v0.7 is a shared Nordic profile version or a national/organisation profile version.
+  - Confirm the target generated ontology QNames for SIRI-FM structures and elements.
+  - Confirm the NeTEx facility registry model and identifier resolution rules for FacilityRef.

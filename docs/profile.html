@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Readable Nordic Profile assembled from the Nordic NeTEx and SIRI ontology layers.">
+  <title>Nordic Profile | CCB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="profile-page">
+  <header class="topbar">
+    <a class="brand" href="."><span class="brand-mark" aria-hidden="true">NP</span><span>Nordic Profile <strong>CCB</strong></span></a>
+    <a class="top-link" href=".">Overview <span aria-hidden="true">↗</span></a>
+  </header>
+  <main>
+    <section class="profile-hero">
+      <div>
+        <p class="eyebrow">Published profile view</p>
+        <h1>The Nordic Profile.</h1>
+        <p class="hero-intro">A readable presentation of the current Nordic rules, assembled from the machine-readable profile layers and their decision record.</p>
+      </div>
+      <div class="profile-meta">
+        <span>Last assembled</span>
+        <strong id="profile-updated">Loading</strong>
+        <small id="profile-source-count">Collecting sources</small>
+      </div>
+    </section>
+
+    <section class="profile-toolbar" aria-label="Profile controls">
+      <div class="profile-tabs" role="tablist" aria-label="Profile area">
+        <button class="profile-tab is-active" data-profile-filter="netex" role="tab" aria-selected="true">NeTEx</button>
+        <button class="profile-tab" data-profile-filter="siri" role="tab" aria-selected="false">SIRI</button>
+      </div>
+      <label class="profile-search"><span>Find in profile</span><input id="profile-search" type="search" placeholder="Class, property, service or rule"></label>
+    </section>
+
+    <section class="profile-summary" aria-label="Profile summary">
+      <div><strong id="term-count">...</strong><span>profile objects</span></div>
+      <div><strong id="shape-count">...</strong><span>profile rules</span></div>
+      <div><strong id="source-count">...</strong><span>ontology sources</span></div>
+    </section>
+
+    <section class="profile-context" id="profile-context" aria-labelledby="context-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">What this profile contains</p><h2 id="context-title">Nordic NeTEx Profile</h2></div>
+        <p class="section-note" id="context-definition">Reading the profile definition...</p>
+      </div>
+      <div class="context-grid">
+        <div class="context-card"><span>Scope</span><strong id="context-scope">NO · SE · FI · DK</strong><small>Shared Nordic agreement</small></div>
+        <div class="context-card"><span>Evidence</span><strong id="context-confidence">Loading</strong><small id="context-validated">Profile validation</small><small id="context-datasets">Source datasets</small></div>
+        <div class="context-card context-card-wide"><span>Profile layers</span><div id="context-layers" class="context-tags">Loading profile layers...</div></div>
+      </div>
+    </section>
+
+    <section class="profile-content" aria-labelledby="terms-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Format view</p><h2 id="terms-title">NeTEx profile</h2></div>
+        <p class="section-note" id="profile-status">Loading the profile...</p>
+      </div>
+      <div class="profile-list" id="profile-list" aria-live="polite">
+        <div class="profile-loading">Reading the ontology layers and assembling the profile.</div>
+      </div>
+    </section>
+    <section class="pending-content" id="pending-panel" aria-labelledby="pending-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">CCB queue</p><h2 id="pending-title">Under consideration</h2></div>
+        <p class="section-note" id="pending-note">Present in the source model, but not part of the accepted Nordic profile.</p>
+      </div>
+      <div class="pending-list" id="pending-list"></div>
+    </section>
+  </main>
+  <footer class="footer"><span>Nordic Profile CCB</span><span>Profile assembled from ontology layers</span></footer>
+  <script src="profile.js"></script>
+</body>
+</html>

@@ -1,8 +1,12 @@
 name: Change existing decision
 description: Propose a change to an accepted or implemented decision.
-title: "[CHANGE] "
+title: ""
 labels: [decision, change, proposed]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        GitHub assigns the issue number after submission. Use that number as the tracking ID, for example #123.
   - type: input
     id: decision-id
     attributes:

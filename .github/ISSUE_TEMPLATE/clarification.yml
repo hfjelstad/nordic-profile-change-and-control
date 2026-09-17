@@ -1,8 +1,12 @@
 name: Clarification
 description: Ask for clarification of an existing Nordic profile decision.
-title: "[CLARIFICATION] "
+title: ""
 labels: [clarification]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        GitHub assigns the issue number after submission. Use that number as the tracking ID, for example #123.
   - type: input
     id: decision-id
     attributes:

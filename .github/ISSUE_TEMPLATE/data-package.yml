@@ -1,8 +1,12 @@
 name: Data package proposal
 description: Propose a shared format or rule for Nordic data packages.
-title: "[PACKAGE] "
+title: ""
 labels: [data-package, proposed]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        GitHub assigns the issue number after submission. Use that number as the tracking ID, for example #123.
   - type: input
     id: package-name
     attributes:

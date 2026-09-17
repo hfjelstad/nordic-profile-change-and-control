@@ -25,7 +25,7 @@ Contributors do not need to edit RDF, SHACL or XML. Start with an Issue Form:
 - Clarification
 - Data package proposal
 
-The issue captures the discussion. An accepted decision is recorded under `decisions/` and receives a stable ID such as `NP-0001`, `SIRI-0001` or `PKG-0001`.
+The issue captures the discussion and is tracked by its GitHub issue number, such as `#123`. An accepted decision is recorded under `decisions/` and receives a separate stable ID such as `NP-0001`, `SIRI-0001` or `PKG-0001`.
 
 ## Decision statuses
 
@@ -58,9 +58,14 @@ Absence of a decision does not mean that a feature is allowed. Unassessed subjec
   clarification.yml
   data-package.yml
 decisions/                Accepted and versioned decision files
+proposals/                Evidence-derived intake bundles and child proposals
 schemas/                  Schemas for decision files
 examples/                 Small illustrative examples
 ```
+
+## Bundled proposals
+
+When one source document contains several independently decidable rules, create a parent bundle under `proposals/` and split it into child proposals. The parent issue coordinates the discussion; child issues can be accepted, rejected or deferred separately. GitHub issue numbers remain tracking IDs, while stable decision IDs are assigned only to accepted child decisions.
 
 ## Scope
 
@@ -71,5 +76,9 @@ The CCB may decide on:
 - shared identifiers and cross-standard relationships
 - data-package structure, manifests and delivery expectations
 - common Nordic requirements versus national extensions
+
+For SIRI work, see [SIRI profile baseline](docs/SIRI-PROFILE-BASELINE.md). The Nordic SIRI Profile and Nordic SIRI Ontology are baseline sources for Nordic decisions, but they do not replace an identified European SIRI baseline.
+
+The intended governance model is a [closed feedback loop](docs/CLOSED-FEEDBACK-LOOP.md): accepted decisions generate ontology, SHACL and documentation artefacts; validation and implementation feedback returns as new linked issues and decisions.
 
 Technical artefacts are generated or maintained in downstream repositories, including the Nordic NeTEx ontology repository.
