@@ -1,0 +1,51 @@
+### XML example
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:siri="http://www.siri.org.uk/siri" version="1.15">
+  <PublicationTimestamp>2026-05-12T12:45:14.655</PublicationTimestamp>
+  <ParticipantRef>FSR</ParticipantRef>
+  <dataObjects>
+    <CompositeFrame version="1" id="FSR:CompositeFrame:1">
+      <validityConditions>
+        <AvailabilityCondition version="1" id="FSR:AvailabilityCondition:1"/>
+      </validityConditions>
+      <codespaces>
+        <Codespace id="FSR">
+          <Xmlns>FSR</Xmlns>
+          <XmlnsUrl>https://www.fintraffic.fi/ns/fsr</XmlnsUrl>
+        </Codespace>
+      </codespaces>
+      <frames>
+        <SiteFrame version="1" id="FSR:SiteFrame:1">
+          <stopPlaces>
+            <StopPlace id="FSR:StopPlace:1" version="1">
+              <Name>Railway station</Name>
+              <Centroid>
+                <Location>
+                  <Longitude>61.047973</Longitude>
+                  <Latitude>28.195304</Latitude>
+                </Location>
+              </Centroid>
+              <TransportMode>rail</TransportMode>
+              <StopPlaceType>railStation</StopPlaceType>
+            </StopPlace>
+          </stopPlaces>
+        </SiteFrame>
+      </frames>
+    </CompositeFrame>
+  </dataObjects>
+</PublicationDelivery>
+```
+
+### XML file
+
+_No response_
+
+### Description
+
+CI test of NeTEx detection, pinned schema validation, and ontology diff.
+
+### Existing decision ID
+
+_No response_
