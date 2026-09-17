@@ -52,6 +52,8 @@ The bundle can be submitted as one parent GitHub issue with six linked child iss
 
 **Open questions:** Confirm the final code lists, the spelling of `CountedFeatureUnit` versus the example's `CountingFeatureUnit`, and whether trend is part of the Nordic contract or only the base schema.
 
+**Discussion feedback:** `HolidayType` was raised as a concern (Ulf, captured by Håkon Fjelstad). It overlaps with `DayType` in a confusing way since both are cardinality `0:*` on the same monitoring validity condition, and it is unclear whether holiday-calendar semantics belong in a SIRI-FM monitoring structure at all rather than a simpler facility-status format. This should be resolved before `HolidayType` is accepted as part of the Nordic profile; excluding it, or replacing it with a simpler day-type-only model, are both open options.
+
 ### FM-004: Accessibility, limitations and suitability
 
 **Proposed decision:** `required`
