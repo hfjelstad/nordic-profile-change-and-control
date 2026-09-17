@@ -1,6 +1,5 @@
 name: Change existing decision
 description: Propose a change to an accepted or implemented decision.
-title: ""
 labels: [decision, change, proposed]
 body:
   - type: markdown

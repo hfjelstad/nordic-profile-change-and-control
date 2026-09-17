@@ -1,6 +1,5 @@
 name: Data package proposal
 description: Propose a shared format or rule for Nordic data packages.
-title: ""
 labels: [data-package, proposed]
 body:
   - type: markdown

@@ -1,6 +1,5 @@
 name: New profile decision
 description: Propose a new Nordic decision for NeTEx, SIRI or a data package.
-title: ""
 labels: [decision, proposed]
 body:
   - type: markdown

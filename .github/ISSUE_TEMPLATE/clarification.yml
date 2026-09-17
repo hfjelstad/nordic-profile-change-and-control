@@ -1,6 +1,5 @@
 name: Clarification
 description: Ask for clarification of an existing Nordic profile decision.
-title: ""
 labels: [clarification]
 body:
   - type: markdown
