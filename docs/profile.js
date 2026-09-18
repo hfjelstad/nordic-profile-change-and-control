@@ -28,25 +28,6 @@ const normalizeSiriStatus = (status) => {
   const value = String(status || '').trim().toLowerCase();
   return ['in-scope', 'extended', 'conditional', 'not-in-scope'].includes(value) ? value : 'in-scope';
 };
-const profileMetadata = (text) => {
-  const match = text.match(/profile:NP\s+a\s+nordic:Profile\s*;([\s\S]*?)(?=\n##|$)/);
-  const block = match ? match[1] : '';
-  const confidence = block.match(/nordic:level\s+"([^"]+)"/);
-  const validated = block.match(/nordic:lastValidated\s+"([^"]+)"/);
-  const datasets = block.match(/nordic:datasets\s+"([^"]+)"/);
-  const definitionText = quoted(block, 'skos:definition');
-  return { confidence: confidence ? confidence[1] : 'Not specified', validated: validated ? validated[1] : 'Not specified', datasets: datasets ? datasets[1] : 'Not specified', definition: definitionText || 'Shared Nordic NeTEx profile.' };
-};
-const siriMetadata = (text) => {
-  const match = text.match(/(?:profile:NordicSIRI|nordic:NordicSIRI)\s+a\s+(?:siri|nordic):Profile\s*;([\s\S]*?)(?=\n##|$)/);
-  const block = match ? match[1] : '';
-  return {
-    definition: quoted(block, 'skos:definition') || 'Nordic localisation of SIRI.',
-    version: quoted(block, 'siri:version') || quoted(block, 'nordic:version') || 'Not specified',
-    basedOn: quoted(block, 'siri:basedOn') || quoted(block, 'nordic:basedOn') || 'Not specified',
-    comment: quoted(block, 'rdfs:comment') || ''
-  };
-};
 const extractNordicBaseline = (text, documentation) => {
   const objects = [];
   const documentationData = documentationLinks(documentation);
@@ -214,16 +195,6 @@ const render = () => {
   document.querySelector('#term-count').textContent = objects.length;
   document.querySelector('#term-count').nextElementSibling.textContent = 'profile objects';
   document.querySelector('#shape-count').textContent = rules.length;
-  document.querySelector('#profile-context').hidden = format !== 'netex' && format !== 'siri';
-  document.querySelector('#context-title').textContent = format === 'siri' ? 'Nordic SIRI Profile' : format === 'netexBaseline' ? 'NeTEx baseline' : 'Nordic NeTEx Profile';
-  if (format === 'siri' && data.metadata) {
-    document.querySelector('#context-definition').textContent = data.metadata.definition;
-    document.querySelector('#context-scope').textContent = 'Nordic SIRI';
-    document.querySelector('#context-confidence').textContent = `v${data.metadata.version}`;
-    document.querySelector('#context-validated').textContent = data.metadata.basedOn;
-    document.querySelector('#context-datasets').textContent = data.metadata.comment || 'Shared real-time profile';
-    document.querySelector('#context-layers').innerHTML = ['Services and objects', 'SHACL constraints', 'NeTEx bridges', 'Transmodel alignment', 'Request / response'].map((layer) => `<span>${layer}</span>`).join('');
-  }
   const pendingPanel = document.querySelector('#pending-panel');
   pendingPanel.hidden = !pending.length;
   document.querySelector('#pending-title').textContent = format === 'siri' ? 'Outside Nordic scope' : 'Under consideration';
@@ -271,15 +242,6 @@ const load = async () => {
       pending: [...new Map([...baselineData.pending, ...overlay.pending].map((item) => [item.name, item])).values()]
     };
     state.siri = extractSiri(siri, siriBaseline);
-    const metadata = profileMetadata(netex);
-    document.querySelector('#context-definition').textContent = metadata.definition;
-    document.querySelector('#context-confidence').textContent = metadata.confidence;
-    document.querySelector('#context-validated').textContent = `Validated ${metadata.validated}`;
-    document.querySelector('#context-datasets').textContent = metadata.datasets;
-    document.querySelector('#context-layers').innerHTML = ['SHACL constraints', 'Element ordering', 'Domain chains', 'Transmodel alignment', 'SIRI bridge'].map((layer) => `<span>${layer}</span>`).join('');
-    const siriProfile = siriMetadata(siri);
-    state.siri.metadata = siriProfile;
-    document.querySelector('#source-count').textContent = '4';
     document.querySelector('#profile-source-count').textContent = 'NeTEx, SIRI, SIRI baseline and documentation read';
     document.querySelector('#profile-updated').textContent = new Date().toLocaleDateString('en-GB');
     render();
