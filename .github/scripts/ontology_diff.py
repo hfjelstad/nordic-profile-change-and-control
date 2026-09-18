@@ -80,6 +80,18 @@ def field_profile_map(baseline_text: str, prefix: str, in_scope_profile: str, cl
     return mapping
 
 
+def model_known_names(model_text: str, prefix: str) -> set:
+    """Names documented anywhere in the curated Nordic structural model file
+    (frame containment via nordic:contains/containedIn/childOf, and leaf
+    property names via nordic:hasElement/nordic:property blocks for SIRI).
+    This is a separate curated overlay, distinct from the baseline/profile
+    files, so a name only appearing here is still "known", just not a
+    baseline decision."""
+    names = {match.group(1) for match in re.finditer(rf"{prefix}:([A-Za-z][\w-]*)", model_text)}
+    names.update(match.group(1) for match in re.finditer(r'nordic:property\s+"([^"]+)"', model_text))
+    return names
+
+
 def profile_status_map(profile_text: str, prefix: str) -> dict:
     statuses = {}
     pattern = re.compile(
@@ -150,6 +162,7 @@ def build_report(xml_text: str) -> str:
             **class_profiles,
         }
         status_map = profile_status_map(fetch(config["profile_url"]), config["ontology_prefix"])
+        model_names = model_known_names(fetch(config["model_url"]), config["ontology_prefix"]) if config.get("model_url") else set()
     except Exception as error:  # network failure or unexpected ontology format
         return (
             f"\n## Elements used vs. the current {config['ontology_label']} profile\n\n"
@@ -163,6 +176,11 @@ def build_report(xml_text: str) -> str:
     in_scope, other_profile, other_status, unmatched = classify(
         content_names, baseline_profiles, status_map, config["in_scope_profile"]
     )
+    # The structural model is a separate curated overlay (frame containment,
+    # childOf, hasElement), not the baseline/profile files classify() already
+    # checked, so split it out from unmatched rather than re-running classify.
+    documented_elsewhere = sorted(name for name in unmatched if name in model_names)
+    unmatched = [name for name in unmatched if name not in model_names]
 
     lines = ["", f"## Elements used vs. the current {config['ontology_label']} profile", ""]
     lines.append(f"Found {len(names)} distinct element names in the example.")
@@ -189,6 +207,14 @@ def build_report(xml_text: str) -> str:
             "genuinely new element this proposal introduces:"
         )
         lines.append(", ".join(f"`{name}`" for name in unmatched))
+
+    if documented_elsewhere:
+        lines.append("")
+        lines.append(
+            "Documented in the Nordic structural model (frame containment or navigation "
+            "only; not itself a baseline decision):"
+        )
+        lines.append(", ".join(f"`{name}`" for name in documented_elsewhere))
 
     if wrapper_names:
         lines.append("")
