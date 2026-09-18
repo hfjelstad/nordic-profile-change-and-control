@@ -165,14 +165,25 @@ const extractSiri = (text, baseline = '') => {
   let baselineMatch;
   while ((baselineMatch = baselinePattern.exec(baseline))) {
     const name = baselineMatch[1];
-    if (objects.some((entry) => entry.subject === `siri:${name}`)) continue;
     const block = baselineMatch[0];
+    // Nested field members (element/path/cardinality), same shape as the
+    // NeTEx baseline; these carry most of the baseline's actual content.
+    const fieldPattern = /nordic:onClass\s+siri:([A-Za-z][\w-]*)\s*;\s*nordic:element\s+"([^"]*)"\s*;\s*nordic:path\s+"([^"]*)"\s*;\s*nordic:cardinality\s+"([^"]*)"/g;
+    const fields = [...block.matchAll(fieldPattern)]
+      .filter(([, onClass]) => onClass === name)
+      .map(([, , element, path, cardinality]) => ({ element, path, cardinality: cardinality || 'unspecified' }));
+    const existing = objects.find((entry) => entry.subject === `siri:${name}`) || pending.find((entry) => entry.subject === `siri:${name}`);
+    if (existing) {
+      existing.fields = fields;
+      continue;
+    }
     const service = [...block.matchAll(/nordic:inService\s+nordic:([A-Za-z_][\w-]*)/g)].map((match) => match[1]);
     objects.push({
       name,
       subject: `siri:${name}`,
       status: 'in-scope',
       kind: 'class',
+      fields,
       description: `${name} in the Nordic SIRI Profile.`,
       service: service.join(', '),
       source: 'siri-nordic-baseline.ttl'
