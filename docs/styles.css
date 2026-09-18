@@ -135,6 +135,11 @@ select { background: transparent; border: 0; border-bottom: 1px solid var(--ink)
 .object-rules strong { color: var(--teal-dark); font: .63rem var(--mono); text-transform: uppercase; }
 .object-rules span { color: var(--muted); font-size: .71rem; }
 .object-rules code { background: transparent; display: inline; font-size: .62rem; padding: 0; }
+.object-fields { border-left: 2px solid var(--teal); display: flex; flex-direction: column; gap: 6px; margin: 16px 0 3px; padding-left: 11px; }
+.object-fields strong { color: var(--teal-dark); font: .63rem var(--mono); text-transform: uppercase; }
+.object-fields span { color: var(--muted); font-size: .71rem; }
+.object-fields code { background: transparent; display: inline; font-size: .62rem; padding: 0; }
+.object-fields .more { color: var(--coral); font-style: italic; }
 .object-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
 .object-links a { border-bottom: 1px solid var(--teal); color: var(--teal-dark); font: .63rem var(--mono); text-decoration: none; text-transform: capitalize; }
 .object-links a:hover { border-color: var(--coral); color: var(--coral); }
