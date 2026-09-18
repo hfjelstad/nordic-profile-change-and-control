@@ -94,6 +94,25 @@ def profile_status_map(profile_text: str, prefix: str) -> dict:
     return statuses
 
 
+# Top-level envelope/frame elements present in every submission regardless of
+# content; never themselves a CCB decision. NeTEx/SIRI classes are always
+# PascalCase, so a lowercase-first name (e.g. "quays", "dataObjects",
+# "keyList") is reliably a collection wrapper, not a domain object either.
+ENVELOPE_ELEMENTS = {
+    "netex": {
+        "PublicationDelivery", "PublicationTimestamp", "ParticipantRef",
+        "ServiceFrame", "SiteFrame", "CompositeFrame", "ResourceFrame",
+        "TimetableFrame", "VehicleScheduleFrame", "FareFrame", "GeneralFrame",
+    },
+    "siri": {"Siri"},
+}
+
+
+def is_structural_wrapper(name: str, standard: str) -> bool:
+    """True for XML structure that never itself carries a CCB decision."""
+    return name[:1].islower() or name in ENVELOPE_ELEMENTS.get(standard, ())
+
+
 def classify(xml_names: set, baseline_profiles: dict, status_map: dict, in_scope_profile: str):
     in_scope, other_profile, other_status, unmatched = [], [], [], []
     for name in sorted(xml_names):
@@ -134,8 +153,11 @@ def build_report(xml_text: str) -> str:
             "This is best-effort enrichment, not a required check.\n"
         )
 
+    wrapper_names = {name for name in names if is_structural_wrapper(name, standard)}
+    content_names = names - wrapper_names
+
     in_scope, other_profile, other_status, unmatched = classify(
-        names, baseline_profiles, status_map, config["in_scope_profile"]
+        content_names, baseline_profiles, status_map, config["in_scope_profile"]
     )
 
     lines = ["", f"## Elements used vs. the current {config['ontology_label']} profile", ""]
@@ -159,11 +181,18 @@ def build_report(xml_text: str) -> str:
     if unmatched:
         lines.append("")
         lines.append(
-            "Not found as a named object in either ontology source. This can be a core envelope "
-            "element that is not modelled as its own object, or a genuinely new element this "
-            "proposal introduces:"
+            "Not found as a named object in either ontology source. This is likely a "
+            "genuinely new element this proposal introduces:"
         )
         lines.append(", ".join(f"`{name}`" for name in unmatched))
+
+    if wrapper_names:
+        lines.append("")
+        lines.append(
+            f"{len(wrapper_names)} structural or envelope elements were excluded from this "
+            "comparison, since they are XML wrappers rather than profile content: "
+            + ", ".join(f"`{name}`" for name in sorted(wrapper_names))
+        )
 
     lines.append("")
     lines.append(
