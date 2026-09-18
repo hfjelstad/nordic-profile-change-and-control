@@ -33,9 +33,6 @@ def get_xml_text(body: str):
     import urllib.request
 
     body = body.replace("\r\n", "\n")
-    pasted = extract_section(body, FIELD_XML_EXAMPLE)
-    if pasted:
-        return "pasted example", strip_code_fence(pasted)
 
     file_section = extract_section(body, FIELD_XML_FILE)
     if file_section:
@@ -43,5 +40,14 @@ def get_xml_text(body: str):
         if url:
             with urllib.request.urlopen(url, timeout=15) as response:
                 return f"attached file ({url})", response.read().decode("utf-8", errors="replace")
+
+    # A blank "render: xml" textarea still comes through as an empty code
+    # fence (e.g. "```xml\n\n```"), not "" or "_No response_", so it must be
+    # unwrapped before deciding whether anything was actually pasted.
+    pasted = extract_section(body, FIELD_XML_EXAMPLE)
+    if pasted:
+        stripped = strip_code_fence(pasted).strip()
+        if stripped:
+            return "pasted example", stripped
 
     return "", ""
