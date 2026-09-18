@@ -94,15 +94,27 @@ def profile_status_map(profile_text: str, prefix: str) -> dict:
     return statuses
 
 
-def is_structural_wrapper(name: str) -> bool:
-    """True for collection wrapper elements (e.g. "quays", "dataObjects",
-    "keyList"), which are mechanical XML structure rather than a class or
-    field a CCB decision would ever apply to. NeTEx/SIRI classes and fields
-    are always PascalCase, so a lowercase-first name is reliably a wrapper.
-    This is deliberately just that one objective rule; which specific
-    PascalCase elements are "envelope" is a judgement call, not something to
-    silently hardcode here."""
-    return name[:1].islower()
+def known_wrapper_names(baseline_text: str) -> set:
+    """Lowercase-first path segments already documented somewhere in the
+    baseline (e.g. "keyList" in "StopPlace/keyList/KeyValue"). nordic:element
+    only ever holds the leaf name, so a wrapper segment only shows up in
+    nordic:path values, which this parses separately from _field_element_names."""
+    names = set()
+    for match in re.finditer(r'nordic:path\s+"([^"]*)"', baseline_text):
+        for name in _field_element_names(match.group(1)):
+            if name[:1].islower():
+                names.add(name)
+    return names
+
+
+def is_structural_wrapper(name: str, known_wrappers: set) -> bool:
+    """True only for lowercase-first names already used as a collection
+    wrapper elsewhere in the baseline (e.g. "quays", "keyList"), which are
+    mechanical XML structure, never a CCB decision. A lowercase-first name
+    that is NOT already known this way must stay visible: it can itself be
+    the substance of a proposal (e.g. wrapping a previously singular
+    PrivateCode in a new, repeatable "privateCodes" collection)."""
+    return name[:1].islower() and name in known_wrappers
 
 
 def classify(xml_names: set, baseline_profiles: dict, status_map: dict, in_scope_profile: str):
@@ -145,7 +157,7 @@ def build_report(xml_text: str) -> str:
             "This is best-effort enrichment, not a required check.\n"
         )
 
-    wrapper_names = {name for name in names if is_structural_wrapper(name)}
+    wrapper_names = {name for name in names if is_structural_wrapper(name, known_wrapper_names(baseline_text))}
     content_names = names - wrapper_names
 
     in_scope, other_profile, other_status, unmatched = classify(
