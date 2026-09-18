@@ -55,7 +55,7 @@ const extractNordicBaseline = (text, documentation) => {
   while ((match = declaration.exec(text))) {
     const name = match[1];
     const scope = match[2];
-    objects.push({ name, subject: `netex:${name}`, scope, status: scope === 'NordicProfile' ? 'in-scope' : scope, description: `${name} in the Nordic Profile baseline.`, documentation: documentationData.links.get(name), source: 'netex-nordic-baseline.ttl' });
+    objects.push({ name, subject: `netex:${name}`, scope, status: scope === 'NordicProfile' ? 'in-scope' : scope, documentation: documentationData.links.get(name), source: 'netex-nordic-baseline.ttl' });
   }
   // Most of the baseline's actual content lives here: fields nested under a
   // class's nordic:ProfileMember blocks, not the class declaration itself.
@@ -107,7 +107,7 @@ const extractNetex = (text, documentation) => {
     const pathMatches = [...block.matchAll(/sh:path\s+([^;\s]+)/g)];
     const paths = pathMatches.map((match) => localName(match[1]));
     if (pendingNetex.has(name)) continue;
-    objects.push({ name, subject: target[1], scope: 'NordicProfile', description: `${name} in the Nordic NeTEx Profile.`, documentation: docs.get(name), source: 'netex-nordic.ttl' });
+    objects.push({ name, subject: target[1], scope: 'NordicProfile', documentation: docs.get(name), source: 'netex-nordic.ttl' });
     pathMatches.forEach((pathMatch, index) => {
       const path = localName(pathMatch[1]);
       const nextPath = pathMatches[index + 1];
@@ -219,14 +219,18 @@ const render = () => {
     return;
   }
   const objectCards = displayedObjects.map((object) => {
+    const description = object.description ? `<p>${escapeHtml(object.description)}</p>` : '';
     const objectRules = rules.filter((rule) => rule.name === object.name).slice(0, 5);
     const ruleSummary = objectRules.length ? `<div class="object-rules"><strong>Profile treatment</strong>${objectRules.map((rule) => `<span><code>${escapeHtml(rule.path)}</code> ${escapeHtml(rule.cardinality)} · ${escapeHtml(rule.description)}</span>`).join('')}</div>` : '';
     const fields = object.fields || [];
     const shownFields = fields.slice(0, 8);
     const moreFields = fields.length > shownFields.length ? `<span class="more">+${fields.length - shownFields.length} more</span>` : '';
-    const fieldsSummary = fields.length ? `<div class="object-fields"><strong>Baseline fields (${fields.length})</strong>${shownFields.map((field) => `<span><code>${escapeHtml(field.path)}</code> ${escapeHtml(field.cardinality)}</span>`).join('')}${moreFields}</div>` : '';
-    const documentation = object.documentation ? `<div class="object-doc-path"><strong>Documentation</strong><code>${escapeHtml(object.documentation)}</code></div>` : '';
-    return `<article class="profile-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(object.name)}</h3><span>Object</span></div><p>${escapeHtml(object.description)}</p><code>${escapeHtml(object.subject)}</code>${ruleSummary}${fieldsSummary}${documentation}<small>${escapeHtml(object.source)}</small></div></article>`;
+    const fieldsSummary = fields.length ? `<div class="object-fields"><strong>Profile fields (${fields.length})</strong>${shownFields.map((field) => `<span><code>${escapeHtml(field.path)}</code> ${escapeHtml(field.cardinality)}</span>`).join('')}${moreFields}</div>` : '';
+    const documentationLinksHtml = object.documentation && typeof object.documentation === 'object'
+      ? Object.entries(object.documentation).filter(([, url]) => url).map(([key, url]) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(key)}</a>`).join('')
+      : (object.documentation ? `<a href="${escapeHtml(object.documentation)}" target="_blank" rel="noopener">source</a>` : '');
+    const documentation = documentationLinksHtml ? `<div class="object-doc-path"><strong>Documentation</strong><div class="object-links">${documentationLinksHtml}</div></div>` : '';
+    return `<article class="profile-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(object.name)}</h3><span>Object</span></div>${description}${ruleSummary}${fieldsSummary}${documentation}<small>${escapeHtml(object.source)}</small></div></article>`;
   });
   document.querySelector('#profile-list').innerHTML = objectCards.join('');
 };
