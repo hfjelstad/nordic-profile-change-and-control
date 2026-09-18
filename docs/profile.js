@@ -149,12 +149,7 @@ const extractSiri = (text, baseline = '') => {
       (status === 'in-scope' ? objects : pending).push(service);
       return;
     }
-    if (declaration.type === 'datasource') {
-      const status = normalizeSiriStatus(q || 'in-scope');
-      const dataSource = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, kind: 'datasource', description: definition(block, 'Data governance role in the Nordic SIRI Profile.'), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
-      (status === 'in-scope' ? objects : pending).push(dataSource);
-      return;
-    }
+    if (declaration.type === 'datasource') return; // governance role, not a profile object worth surfacing here
 
     if (/^(Profile|Service|DataSource|Enumeration|CommunicationPattern|XMLNamespace)$/.test(declaration.name)) return;
     const serviceRefs = [...block.matchAll(/(?:nordic|siri):(?:inService|usedIn)\s+(?:nordic|siri):([A-Za-z_][\w-]*)/g)].map((match) => match[1]);
@@ -229,7 +224,7 @@ const render = () => {
     return;
   }
   const objectCards = displayedObjects.map((object) => {
-    const kindLabel = object.kind === 'service' ? 'Service' : object.kind === 'datasource' ? 'Data source' : 'Object';
+    const kindLabel = object.kind === 'service' ? 'Service' : 'Object';
     const description = object.description ? `<p>${escapeHtml(object.description)}</p>` : '';
     const objectRules = rules.filter((rule) => rule.name === object.name).slice(0, 5);
     const ruleSummary = objectRules.length ? `<div class="object-rules"><strong>Profile treatment</strong>${objectRules.map((rule) => `<span><code>${escapeHtml(rule.path)}</code> ${escapeHtml(rule.cardinality)} · ${escapeHtml(rule.description)}</span>`).join('')}</div>` : '';
