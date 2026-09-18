@@ -106,7 +106,7 @@ select { background: transparent; border: 0; border-bottom: 1px solid var(--ink)
 .profile-tab:hover, .profile-tab.is-active { background: var(--teal); border-color: var(--teal); color: white; }
 .profile-search { color: var(--muted); display: flex; flex-direction: column; font: .62rem var(--mono); gap: 6px; }
 .profile-search input { background: var(--white); border: 1px solid var(--line); color: var(--ink); font: .78rem var(--sans); min-width: 280px; padding: 9px 11px; }
-.profile-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
+.profile-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
 .profile-summary div { background: var(--paper); display: flex; flex-direction: column; padding: 22px 5vw; }
 .profile-summary strong { font-size: 2.1rem; letter-spacing: -.07em; line-height: 1; }
 .profile-summary span { color: var(--muted); font: .64rem var(--mono); margin-top: 9px; }
