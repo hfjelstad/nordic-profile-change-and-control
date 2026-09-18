@@ -230,7 +230,7 @@ const render = () => {
       ? Object.entries(object.documentation).filter(([, url]) => url).map(([key, url]) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(key)}</a>`).join('')
       : (object.documentation ? `<a href="${escapeHtml(object.documentation)}" target="_blank" rel="noopener">source</a>` : '');
     const documentation = documentationLinksHtml ? `<div class="object-doc-path"><strong>Documentation</strong><div class="object-links">${documentationLinksHtml}</div></div>` : '';
-    return `<article class="profile-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(object.name)}</h3><span>Object</span></div>${description}${ruleSummary}${fieldsSummary}${documentation}<small>${escapeHtml(object.source)}</small></div></article>`;
+    return `<article class="profile-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(object.name)}</h3><span>Object</span></div>${description}${ruleSummary}${fieldsSummary}${documentation}</div></article>`;
   });
   document.querySelector('#profile-list').innerHTML = objectCards.join('');
 };
