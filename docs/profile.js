@@ -132,7 +132,10 @@ const extractSiri = (text, baseline = '') => {
     start: match.index,
     end: match[0].length,
     name: match[1],
-    type: /(?:nordic|siri):(?:Service|DataSource)/.test(match[0]) ? 'service' : 'class'
+    // DataSource entries are governance roles (who produces/aggregates data),
+    // not SIRI XML classes, so they never have fields or SHACL rules — keep
+    // them out of the 'class' bucket and label them honestly, not as 'Object'.
+    type: /(?:nordic|siri):Service\b/.test(match[0]) ? 'service' : (/(?:nordic|siri):DataSource\b/.test(match[0]) ? 'datasource' : 'class')
   }));
 
   declarations.forEach((declaration, index) => {
@@ -142,8 +145,14 @@ const extractSiri = (text, baseline = '') => {
     if (declaration.type === 'service') {
       const status = normalizeSiriStatus(q || 'in-scope');
       serviceStatuses.set(declaration.name, status);
-      const service = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, description: definition(block, 'SIRI service in the Nordic Profile.'), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
+      const service = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, kind: 'service', description: definition(block, 'SIRI service in the Nordic Profile.'), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
       (status === 'in-scope' ? objects : pending).push(service);
+      return;
+    }
+    if (declaration.type === 'datasource') {
+      const status = normalizeSiriStatus(q || 'in-scope');
+      const dataSource = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, kind: 'datasource', description: definition(block, 'Data governance role in the Nordic SIRI Profile.'), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
+      (status === 'in-scope' ? objects : pending).push(dataSource);
       return;
     }
 
@@ -153,7 +162,7 @@ const extractSiri = (text, baseline = '') => {
     const explicitStatus = q || 'in-scope';
     const derivedStatus = serviceValues.some((value) => value !== 'in-scope') ? serviceValues.find((value) => value !== 'in-scope') : (serviceValues.length ? 'in-scope' : explicitStatus);
     const status = normalizeSiriStatus(derivedStatus || explicitStatus || 'in-scope');
-    const object = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, description: definition(block, 'SIRI object in the Nordic Profile.'), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
+    const object = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, kind: 'class', description: definition(block, 'SIRI object in the Nordic Profile.'), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
     (status === 'in-scope' ? objects : pending).push(object);
   });
 
@@ -168,6 +177,7 @@ const extractSiri = (text, baseline = '') => {
       name,
       subject: `siri:${name}`,
       status: 'in-scope',
+      kind: 'class',
       description: `${name} in the Nordic SIRI Profile.`,
       service: service.join(', '),
       source: 'siri-nordic-baseline.ttl'
@@ -219,6 +229,7 @@ const render = () => {
     return;
   }
   const objectCards = displayedObjects.map((object) => {
+    const kindLabel = object.kind === 'service' ? 'Service' : object.kind === 'datasource' ? 'Data source' : 'Object';
     const description = object.description ? `<p>${escapeHtml(object.description)}</p>` : '';
     const objectRules = rules.filter((rule) => rule.name === object.name).slice(0, 5);
     const ruleSummary = objectRules.length ? `<div class="object-rules"><strong>Profile treatment</strong>${objectRules.map((rule) => `<span><code>${escapeHtml(rule.path)}</code> ${escapeHtml(rule.cardinality)} · ${escapeHtml(rule.description)}</span>`).join('')}</div>` : '';
@@ -230,7 +241,7 @@ const render = () => {
       ? Object.entries(object.documentation).filter(([, url]) => url).map(([key, url]) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(key)}</a>`).join('')
       : (object.documentation ? `<a href="${escapeHtml(object.documentation)}" target="_blank" rel="noopener">source</a>` : '');
     const documentation = documentationLinksHtml ? `<div class="object-doc-path"><strong>Documentation</strong><div class="object-links">${documentationLinksHtml}</div></div>` : '';
-    return `<article class="profile-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(object.name)}</h3><span>Object</span></div>${description}${ruleSummary}${fieldsSummary}${documentation}</div></article>`;
+    return `<article class="profile-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(object.name)}</h3><span>${kindLabel}</span></div>${description}${ruleSummary}${fieldsSummary}${documentation}</div></article>`;
   });
   document.querySelector('#profile-list').innerHTML = objectCards.join('');
 };
