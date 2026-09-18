@@ -1,6 +1,7 @@
 const sources = {
   netex: { label: 'NeTEx', url: 'https://raw.githubusercontent.com/entur/nordic-netex-ontology/main/netex-nordic.ttl' },
   netexBaseline: { label: 'Nordic Profile baseline', url: 'https://raw.githubusercontent.com/entur/nordic-netex-ontology/main/netex-nordic-baseline.ttl' },
+  netexModel: { label: 'NeTEx structural model', url: 'https://raw.githubusercontent.com/entur/nordic-netex-ontology/main/netex-nordic-model.ttl' },
   siri: { label: 'SIRI', url: 'https://raw.githubusercontent.com/entur/nordic-siri-ontology/main/siri-nordic.ttl' },
   siriBaseline: { label: 'SIRI baseline', url: 'https://raw.githubusercontent.com/entur/nordic-siri-ontology/main/siri-nordic-baseline.ttl' },
   netexDocumentation: { label: 'NeTEx documentation', url: 'https://raw.githubusercontent.com/entur/nordic-netex-documentation/main/ontology/netex-nordic-documentation.ttl' }
@@ -70,6 +71,32 @@ const documentationLinks = (text) => {
   const scopePattern = /netex:([A-Za-z][\w-]*)\s+profile:scope\s+profile:([A-Za-z][\w-]*)/g;
   while ((match = scopePattern.exec(text))) scopes.set(match[1], match[2]);
   return { links, scopes };
+};
+
+const extractNetexModel = (text) => {
+  // Curated frame containment/childOf overlay (a separate file from the
+  // baseline/SHACL layers): covers envelope elements like
+  // PublicationDelivery/ParticipantRef that are never a CCB decision
+  // themselves but are still real, documented NeTEx structure.
+  const entries = new Map();
+  const ensure = (name) => {
+    if (!entries.has(name)) entries.set(name, { name, contains: [], childOf: null });
+    return entries.get(name);
+  };
+  const statementPattern = /netex:([A-Za-z][\w-]*)\s+((?:nordic:\w+\s+[^;.]+;?\s*)+)\./g;
+  let match;
+  while ((match = statementPattern.exec(text))) {
+    const subject = match[1];
+    const body = match[2];
+    const containsMatch = body.match(/nordic:contains\s+([^;]+)/);
+    if (containsMatch) {
+      const names = [...containsMatch[1].matchAll(/netex:([A-Za-z][\w-]*)/g)].map((m) => m[1]);
+      ensure(subject).contains.push(...names);
+    }
+    const childOfMatch = body.match(/nordic:childOf\s+netex:([A-Za-z][\w-]*)/);
+    if (childOfMatch) ensure(subject).childOf = childOfMatch[1];
+  }
+  return entries;
 };
 
 const extractNetex = (text, documentation) => {
@@ -205,7 +232,7 @@ const render = () => {
     return;
   }
   const objectCards = displayedObjects.map((object) => {
-    const kindLabel = object.kind === 'service' ? 'Service' : 'Object';
+    const kindLabel = object.kind === 'service' ? 'Service' : object.kind === 'structure' ? 'Structure' : 'Object';
     const description = object.description ? `<p>${escapeHtml(object.description)}</p>` : '';
     const objectRules = rules.filter((rule) => rule.name === object.name).slice(0, 5);
     const ruleSummary = objectRules.length ? `<div class="object-rules"><strong>Profile treatment</strong>${objectRules.map((rule) => `<span><code>${escapeHtml(rule.path)}</code> ${escapeHtml(rule.cardinality)} · ${escapeHtml(rule.description)}</span>`).join('')}</div>` : '';
@@ -213,11 +240,15 @@ const render = () => {
     const shownFields = fields.slice(0, 8);
     const moreFields = fields.length > shownFields.length ? `<span class="more">+${fields.length - shownFields.length} more</span>` : '';
     const fieldsSummary = fields.length ? `<div class="object-fields"><strong>Profile fields (${fields.length})</strong>${shownFields.map((field) => `<span><code>${escapeHtml(field.path)}</code> ${escapeHtml(field.cardinality)}</span>`).join('')}${moreFields}</div>` : '';
+    const structureParts = [];
+    if (object.childOf) structureParts.push(`<span>Child of <code>${escapeHtml(object.childOf)}</code></span>`);
+    if (object.contains && object.contains.length) structureParts.push(`<span>Contains ${object.contains.map((name) => `<code>${escapeHtml(name)}</code>`).join(', ')}</span>`);
+    const structureSummary = structureParts.length ? `<div class="object-structure"><strong>Containment</strong>${structureParts.join('')}</div>` : '';
     const documentationLinksHtml = object.documentation && typeof object.documentation === 'object'
       ? Object.entries(object.documentation).filter(([, url]) => url).map(([key, url]) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(key)}</a>`).join('')
       : (object.documentation ? `<a href="${escapeHtml(object.documentation)}" target="_blank" rel="noopener">source</a>` : '');
     const documentation = documentationLinksHtml ? `<div class="object-doc-path"><strong>Documentation</strong><div class="object-links">${documentationLinksHtml}</div></div>` : '';
-    return `<article class="profile-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(object.name)}</h3><span>${kindLabel}</span></div>${description}${ruleSummary}${fieldsSummary}${documentation}</div></article>`;
+    return `<article class="profile-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(object.name)}</h3><span>${kindLabel}</span></div>${description}${ruleSummary}${fieldsSummary}${structureSummary}${documentation}</div></article>`;
   });
   document.querySelector('#profile-list').innerHTML = objectCards.join('');
 };
@@ -225,17 +256,26 @@ const render = () => {
 const load = async () => {
   try {
     const fetchText = (url) => fetch(url).then((response) => { if (!response.ok) throw new Error(response.status); return response.text(); });
-    const [netex, siri, siriBaseline, documentation, baseline] = await Promise.all([
+    const [netex, siri, siriBaseline, documentation, baseline, model] = await Promise.all([
       fetchText(sources.netex.url),
       fetchText(sources.siri.url),
       fetchText(sources.siriBaseline.url),
       fetchText(sources.netexDocumentation.url),
-      fetchText(sources.netexBaseline.url)
+      fetchText(sources.netexBaseline.url),
+      fetchText(sources.netexModel.url)
     ]);
     const overlay = extractNetex(netex, documentation);
     const baselineData = extractNordicBaseline(baseline, documentation);
     const objects = new Map(baselineData.objects.map((object) => [object.name, object]));
     overlay.objects.forEach((object) => objects.set(object.name, { ...objects.get(object.name), ...object }));
+    // Envelope/frame elements (PublicationDelivery, ParticipantRef, ...) are
+    // never baseline/SHACL content, only documented here as containment; add
+    // them as their own cards, without touching objects already known above.
+    extractNetexModel(model).forEach((entry, name) => {
+      if (objects.has(name)) return;
+      if (!entry.contains.length && !entry.childOf) return;
+      objects.set(name, { name, subject: `netex:${name}`, kind: 'structure', contains: entry.contains, childOf: entry.childOf, source: 'netex-nordic-model.ttl' });
+    });
     state.netex = {
       objects: [...objects.values()],
       rules: overlay.rules,
