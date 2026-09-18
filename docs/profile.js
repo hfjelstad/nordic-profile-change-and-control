@@ -145,7 +145,7 @@ const extractSiri = (text, baseline = '') => {
     if (declaration.type === 'service') {
       const status = normalizeSiriStatus(q || 'in-scope');
       serviceStatuses.set(declaration.name, status);
-      const service = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, kind: 'service', description: definition(block, 'SIRI service in the Nordic Profile.'), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
+      const service = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, kind: 'service', description: definition(block, ''), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
       (status === 'in-scope' ? objects : pending).push(service);
       return;
     }
@@ -157,7 +157,7 @@ const extractSiri = (text, baseline = '') => {
     const explicitStatus = q || 'in-scope';
     const derivedStatus = serviceValues.some((value) => value !== 'in-scope') ? serviceValues.find((value) => value !== 'in-scope') : (serviceValues.length ? 'in-scope' : explicitStatus);
     const status = normalizeSiriStatus(derivedStatus || explicitStatus || 'in-scope');
-    const object = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, kind: 'class', description: definition(block, 'SIRI object in the Nordic Profile.'), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
+    const object = { name: quoted(block, 'rdfs:label') || declaration.name, subject: `siri:${declaration.name}`, status, kind: 'class', description: definition(block, ''), documentation: quoted(block, 'doc:description') || quoted(block, 'doc:table'), source: 'siri-nordic.ttl' };
     (status === 'in-scope' ? objects : pending).push(object);
   });
 
@@ -184,7 +184,6 @@ const extractSiri = (text, baseline = '') => {
       status: 'in-scope',
       kind: 'class',
       fields,
-      description: `${name} in the Nordic SIRI Profile.`,
       service: service.join(', '),
       source: 'siri-nordic-baseline.ttl'
     });
