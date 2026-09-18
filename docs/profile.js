@@ -267,7 +267,14 @@ const load = async () => {
     const overlay = extractNetex(netex, documentation);
     const baselineData = extractNordicBaseline(baseline, documentation);
     const objects = new Map(baselineData.objects.map((object) => [object.name, object]));
-    overlay.objects.forEach((object) => objects.set(object.name, { ...objects.get(object.name), ...object }));
+    // SHACL shapes always assume NordicProfile scope and know nothing about
+    // the baseline; if the baseline has since marked a name NordicCandidate,
+    // don't let a stale shape resurrect it as an accepted Object card.
+    const pendingNames = new Set([...baselineData.pending, ...overlay.pending].map((item) => item.name));
+    overlay.objects.forEach((object) => {
+      if (pendingNames.has(object.name)) return;
+      objects.set(object.name, { ...objects.get(object.name), ...object });
+    });
     // Envelope/frame elements (PublicationDelivery, ParticipantRef, ...) are
     // never baseline/SHACL content, only documented here as containment; add
     // them as their own cards, without touching objects already known above.
