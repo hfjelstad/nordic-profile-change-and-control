@@ -9,20 +9,20 @@ body:
 
         This is the low-friction entry point: an XML example plus a description. The CCB will translate this into the exact profile rule and, if accepted, into a decision file. You do not need to know QNames, cardinalities or SHACL.
 
-        You must provide the XML example either as an attached file or pasted below, not both empty. Prefer attaching a file; it is the more reliable option.
+        You must attach the XML file below; that is the only thing the automated check reads and validates.
   - type: upload
     id: xml-file
     attributes:
       label: XML file
-      description: Attach the example as a .xml file. This is the preferred option. Either this file or the pasted example below is required.
+      description: Attach the example as a .xml file. This is what the automated check validates against the SIRI or NeTEx schema.
     validations:
       required: false
       accept: ".xml"
   - type: textarea
     id: xml-example
     attributes:
-      label: XML example
-      description: A SIRI or NeTEx XML fragment showing what should be allowed, required or excluded. Include enough surrounding context (parent element, namespaces) to be validated against the schema. Leave blank if you are attaching a file above instead.
+      label: XML example (optional, for human readers only)
+      description: Optional. Paste a short excerpt to highlight the specific part of the file you are proposing to change. This is not validated or checked automatically in any way, it is only shown to the humans reading the issue, so it does not need to be complete or well-formed on its own.
       render: xml
     validations:
       required: false

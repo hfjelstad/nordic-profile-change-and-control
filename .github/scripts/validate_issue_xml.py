@@ -21,7 +21,7 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 
-from issue_body import get_xml_text
+from issue_body import get_xml_text, has_pasted_example
 from ontology_diff import build_report
 from standards import STANDARDS
 from xsd_validate import validate as xsd_validate
@@ -58,10 +58,16 @@ def run() -> int:
     ok = True
     if not xml_text:
         ok = False
-        lines.append(
-            "No XML example was found, neither pasted nor attached as a file. "
-            "Please edit this issue and add one."
-        )
+        if has_pasted_example(body):
+            lines.append(
+                "No XML file was attached. The pasted XML example is for human "
+                "context only and is not validated automatically. Please attach "
+                "the XML as a file."
+            )
+        else:
+            lines.append(
+                "No XML file was found. Please edit this issue and attach one."
+            )
     else:
         valid, error = well_formed(xml_text)
         if valid:

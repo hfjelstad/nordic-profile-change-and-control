@@ -29,7 +29,12 @@ def find_file_url(text: str) -> str:
 
 
 def get_xml_text(body: str):
-    """Returns (source_description, xml_text). xml_text is empty if none found."""
+    """Returns (source_description, xml_text). xml_text is empty if no file was attached.
+
+    The "XML example" field is human-readable context only (e.g. highlighting
+    a snippet) and is never parsed or validated here; only the attached
+    "XML file" is read.
+    """
     import urllib.request
 
     body = body.replace("\r\n", "\n")
@@ -41,13 +46,11 @@ def get_xml_text(body: str):
             with urllib.request.urlopen(url, timeout=15) as response:
                 return f"attached file ({url})", response.read().decode("utf-8", errors="replace")
 
-    # A blank "render: xml" textarea still comes through as an empty code
-    # fence (e.g. "```xml\n\n```"), not "" or "_No response_", so it must be
-    # unwrapped before deciding whether anything was actually pasted.
-    pasted = extract_section(body, FIELD_XML_EXAMPLE)
-    if pasted:
-        stripped = strip_code_fence(pasted).strip()
-        if stripped:
-            return "pasted example", stripped
-
     return "", ""
+
+
+def has_pasted_example(body: str) -> bool:
+    """True if the human-readable "XML example" field has any content."""
+    body = body.replace("\r\n", "\n")
+    pasted = extract_section(body, FIELD_XML_EXAMPLE)
+    return bool(strip_code_fence(pasted).strip()) if pasted else False
