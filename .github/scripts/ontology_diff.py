@@ -46,6 +46,40 @@ def baseline_profile_map(baseline_text: str, prefix: str, in_scope_profile: str)
     return mapping
 
 
+def _field_element_names(raw_element_value: str):
+    """A nordic:element value can be a bare name ("Name"), an attribute
+    ("@id"), or a slash-separated path ("Foo/Bar/@id"). Only the plain
+    element name segments are relevant here, since they are what is
+    compared against XML tag names, not attributes or full paths."""
+    names = set()
+    for segment in raw_element_value.split("/"):
+        segment = segment.strip()
+        if segment and not segment.startswith("@"):
+            names.add(segment)
+    return names
+
+
+def field_profile_map(baseline_text: str, prefix: str, in_scope_profile: str, class_profiles: dict) -> dict:
+    """Maps element names that only appear nested inside a class's
+    nordic:ProfileMember block (e.g. "AccessibilityAssessment" as a field of
+    Quay) to that owning class's profile scope. Most of the baseline's
+    content lives at this nested level, not as its own top-level class
+    declaration, so this is needed in addition to baseline_profile_map."""
+    mapping = {}
+    pattern = re.compile(
+        rf"nordic:onClass\s+{prefix}:([A-Za-z][\w-]*)\s*;[\s\S]*?nordic:element\s+\"([^\"]*)\""
+    )
+    for match in pattern.finditer(baseline_text):
+        class_name, raw_element = match.group(1), match.group(2)
+        profile = class_profiles.get(class_name)
+        if profile is None:
+            continue
+        for name in _field_element_names(raw_element):
+            if name not in mapping or profile == in_scope_profile:
+                mapping[name] = profile
+    return mapping
+
+
 def profile_status_map(profile_text: str, prefix: str) -> dict:
     statuses = {}
     pattern = re.compile(
@@ -81,9 +115,17 @@ def build_report(xml_text: str) -> str:
 
     try:
         names = local_element_names(xml_text)
-        baseline_profiles = baseline_profile_map(
-            fetch(config["baseline_url"]), config["ontology_prefix"], config["in_scope_profile"]
+        baseline_text = fetch(config["baseline_url"])
+        class_profiles = baseline_profile_map(
+            baseline_text, config["ontology_prefix"], config["in_scope_profile"]
         )
+        # Most of the baseline is nested field members of a class (e.g.
+        # Quay's AccessibilityAssessment), not top-level class declarations,
+        # so both maps are needed; class-level wins if a name is both.
+        baseline_profiles = {
+            **field_profile_map(baseline_text, config["ontology_prefix"], config["in_scope_profile"], class_profiles),
+            **class_profiles,
+        }
         status_map = profile_status_map(fetch(config["profile_url"]), config["ontology_prefix"])
     except Exception as error:  # network failure or unexpected ontology format
         return (
