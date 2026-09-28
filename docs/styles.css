@@ -95,14 +95,6 @@ select { background: transparent; border: 0; border-bottom: 1px solid var(--ink)
 .status-pill { border: 1px solid currentColor; font-family: var(--mono); font-size: .62rem; padding: 4px 7px; }
 .status-draft { color: var(--teal); }
 .empty-state { color: var(--muted); padding: 30px 0 0; }
-.how-it-works { background: var(--teal-dark); color: white; display: grid; gap: 8vw; grid-template-columns: .9fr 1.1fr; padding: 75px 5vw; }
-.how-it-works .eyebrow { color: var(--yellow); }
-.how-it-works h2 { max-width: 450px; }
-.how-it-works p { color: #bdd3cd; font-size: .9rem; max-width: 430px; }
-.flow-list { list-style: none; margin: 0; padding: 0; }
-.flow-list li { align-items: baseline; border-top: 1px solid #467b74; display: grid; gap: 17px; grid-template-columns: 35px 1fr 1.6fr; padding: 18px 0; }
-.flow-list span, .flow-list small { color: #98c0b9; font-family: var(--mono); font-size: .66rem; }
-.flow-list strong { font-size: 1rem; }
 .footer { color: var(--muted); display: flex; font-family: var(--mono); font-size: .65rem; justify-content: space-between; margin: 0 auto; max-width: 1280px; padding: 25px 5vw; }
 .profile-hero { align-items: end; display: grid; gap: 8vw; grid-template-columns: minmax(0, 1fr) 270px; padding: 76px 5vw 65px; }
 .profile-hero h1 { margin-bottom: 24px; }
@@ -191,10 +183,6 @@ select { background: transparent; border: 0; border-bottom: 1px solid var(--ink)
   .loop-step + .loop-step { border-top: 0; }
   .register-grid { grid-template-columns: 1fr; }
   .area-grid { grid-template-columns: 1fr; }
-  .how-it-works { display: block; padding: 56px 6vw; }
-  .flow-list { margin-top: 42px; }
-  .flow-list li { grid-template-columns: 30px 1fr; }
-  .flow-list small { grid-column: 2; margin-top: -12px; }
   .footer { display: block; padding: 23px 6vw; }
   .footer span { display: block; margin-bottom: 8px; }
 }
