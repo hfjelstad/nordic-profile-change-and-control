@@ -230,21 +230,11 @@ def build_report(xml_text: str) -> str:
     lines = ["", f"## Elements used vs. the current {config['ontology_label']} profile", ""]
     lines.append(f"Found {len(names)} distinct element names in the example.")
 
-    if in_scope:
-        lines.append("")
-        lines.append(f"Already accepted into the shared {config['ontology_label']} baseline:")
-        lines.append(", ".join(f"`{name}`" for name, _ in in_scope))
-
-    if other_profile:
-        lines.append("")
-        lines.append("Declared in the ontology, but under a different profile scope, not the shared baseline:")
-        lines.append(", ".join(f"`{name}` ({profile})" for name, profile in other_profile))
-
-    if other_status:
-        lines.append("")
-        lines.append("Declared in the ontology, but not in-scope (needs a decision either way):")
-        lines.append(", ".join(f"`{name}` ({status})" for name, status in other_status))
-
+    # What actually needs a human's attention goes first, in full view: new
+    # elements, new attributes, and anything declared but out of scope. The
+    # much longer "this already matches" lists are pure noise for a reviewer
+    # trying to see what's being proposed, so those go in collapsed <details>
+    # blocks below instead of competing for the same space.
     if unmatched:
         lines.append("")
         lines.append(
@@ -264,21 +254,46 @@ def build_report(xml_text: str) -> str:
         )
         lines.append(", ".join(f"`{path}`" for path in attribute_paths))
 
+    if other_status:
+        lines.append("")
+        lines.append("Declared in the ontology, but not in-scope (needs a decision either way):")
+        lines.append(", ".join(f"`{name}` ({status})" for name, status in other_status))
+
+    if not (unmatched or attribute_paths or other_status):
+        lines.append("")
+        lines.append("Nothing new: every element name here is already accepted into the baseline.")
+
+    if in_scope:
+        lines.append("")
+        lines.append(f"<details><summary>{len(in_scope)} elements already accepted into the shared {config['ontology_label']} baseline (click to expand)</summary>")
+        lines.append("")
+        lines.append(", ".join(f"`{name}`" for name, _ in in_scope))
+        lines.append("")
+        lines.append("</details>")
+
+    if other_profile:
+        lines.append("")
+        lines.append(f"<details><summary>{len(other_profile)} elements declared under a different profile scope, not the shared baseline (click to expand)</summary>")
+        lines.append("")
+        lines.append(", ".join(f"`{name}` ({profile})" for name, profile in other_profile))
+        lines.append("")
+        lines.append("</details>")
+
     if documented_elsewhere:
         lines.append("")
-        lines.append(
-            "Documented in the Nordic structural model (frame containment or navigation "
-            "only; not itself a baseline decision):"
-        )
+        lines.append(f"<details><summary>{len(documented_elsewhere)} elements documented in the Nordic structural model, frame containment/navigation only (click to expand)</summary>")
+        lines.append("")
         lines.append(", ".join(f"`{name}`" for name in documented_elsewhere))
+        lines.append("")
+        lines.append("</details>")
 
     if wrapper_names:
         lines.append("")
-        lines.append(
-            f"{len(wrapper_names)} lowercase-first collection wrapper elements were excluded from "
-            "this comparison, since they are XML structure rather than profile content: "
-            + ", ".join(f"`{name}`" for name in sorted(wrapper_names))
-        )
+        lines.append(f"<details><summary>{len(wrapper_names)} lowercase-first collection wrapper elements excluded as XML structure (click to expand)</summary>")
+        lines.append("")
+        lines.append(", ".join(f"`{name}`" for name in sorted(wrapper_names)))
+        lines.append("")
+        lines.append("</details>")
 
     lines.append("")
     lines.append(
