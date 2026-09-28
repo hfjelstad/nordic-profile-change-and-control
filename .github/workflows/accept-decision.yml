@@ -5,6 +5,11 @@ name: Accept decision
 # this derives the decision file straight from the already-computed ontology
 # diff (class/property/path/cardinality/codes) plus the issue's own title
 # and Description field (copied verbatim) - no free-text interpretation.
+#
+# This opens a PR rather than committing straight to main: the PR review is
+# the actual safety gate, not who was allowed to add the label. That also
+# means the trigger itself can be relaxed later (e.g. a public button) without
+# ever letting anything land on main without a human merging it.
 on:
   issues:
     types: [labeled]
@@ -12,6 +17,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 jobs:
   accept:
@@ -37,15 +43,24 @@ jobs:
           python .github/scripts/draft_decision.py "${{ github.event.issue.number }}" "${{ github.event.issue.title }}" \
             | tee "${{ runner.temp }}/draft-decision.log"
 
-      - name: Commit new decision file(s)
+      - name: Open a PR with the new decision file(s)
+        id: pr
         if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if git status --porcelain decisions/ | grep -q .; then
             git config user.name "nordic-profile-ccb-bot"
             git config user.email "actions@github.com"
+            branch="accept/issue-${{ github.event.issue.number }}"
+            git checkout -b "$branch"
             git add decisions/
             git commit -m "Accept decision for issue #${{ github.event.issue.number }} (mechanically derived)"
-            git push origin main
+            git push origin "$branch" --force
+            pr_url=$(gh pr create --title "Accept decision for issue #${{ github.event.issue.number }}" \
+              --body "Mechanically derived from issue #${{ github.event.issue.number }}. Review the decision file, then merge to accept it." \
+              --head "$branch" --base main)
+            echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Comment back on the issue
@@ -54,7 +69,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -s "${{ runner.temp }}/draft-decision.log" ]; then
-            echo "Mechanically derived from this issue's XML (no manual write-up):" > "${{ runner.temp }}/comment.md"
+            echo "Mechanically derived from this issue's XML (no manual write-up). Review and merge to accept:" > "${{ runner.temp }}/comment.md"
+            echo "" >> "${{ runner.temp }}/comment.md"
+            echo "${{ steps.pr.outputs.pr_url }}" >> "${{ runner.temp }}/comment.md"
+            echo "" >> "${{ runner.temp }}/comment.md"
             echo '```' >> "${{ runner.temp }}/comment.md"
             cat "${{ runner.temp }}/draft-decision.log" >> "${{ runner.temp }}/comment.md"
             echo '```' >> "${{ runner.temp }}/comment.md"
