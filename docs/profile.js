@@ -6,9 +6,8 @@ const sources = {
   siriBaseline: { label: 'SIRI baseline', url: 'https://raw.githubusercontent.com/entur/nordic-siri-ontology/main/siri-nordic-baseline.ttl' },
   netexDocumentation: { label: 'NeTEx documentation', url: 'https://raw.githubusercontent.com/entur/nordic-netex-documentation/main/ontology/netex-nordic-documentation.ttl' }
 };
-const pendingNetex = new Set(['DatedServiceJourney']);
 
-const state = { netex: { objects: [], rules: [], pending: [] }, netexBaseline: { objects: [], rules: [], pending: [] }, siri: { objects: [], rules: [], pending: [] }, filter: 'netex', query: '' };
+const state = { netex: { objects: [], rules: [], pending: [], national: [] }, netexBaseline: { objects: [], rules: [], pending: [] }, siri: { objects: [], rules: [], pending: [] }, filter: 'netex', query: '' };
 const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
 const localName = (value) => value.split(/[#:]/).pop().replace(/[<>]/g, '');
 const profileStatusValue = (block) => {
@@ -52,7 +51,18 @@ const extractNordicBaseline = (text, documentation) => {
   objects.forEach((object) => { object.fields = fieldsByClass.get(object.name) || []; });
   const active = objects.filter((object) => object.scope === 'NordicProfile');
   const pending = objects.filter((object) => object.scope === 'NordicCandidate').map((object) => ({ ...object, status: object.scope }));
-  return { objects: active, rules: [], pending };
+  // Some classes only ever show up as nordic:onClass field blocks, never
+  // with a top-level nordic:inProfile declaration at all - the baseline's
+  // own header explains this is deliberate: "Nordic-owned classes are
+  // assigned to profile:NordicProfile; downstream profiles may assign other
+  // classes to their own profile while reusing these field definitions."
+  // That is exactly "implemented somewhere, not part of the shared profile",
+  // read straight from the source rather than a hardcoded name list.
+  const declaredNames = new Set(objects.map((object) => object.name));
+  const national = [...fieldsByClass.keys()]
+    .filter((name) => !declaredNames.has(name))
+    .map((name) => ({ name, subject: `netex:${name}`, status: 'national', fields: fieldsByClass.get(name), documentation: documentationData.links.get(name), source: 'netex-nordic-baseline.ttl' }));
+  return { objects: active, rules: [], pending, national };
 };
 const documentationLinks = (text) => {
   const links = new Map();
@@ -114,7 +124,6 @@ const extractNetex = (text, documentation) => {
     const name = localName(target[1]);
     const pathMatches = [...block.matchAll(/sh:path\s+([^;\s]+)/g)];
     const paths = pathMatches.map((match) => localName(match[1]));
-    if (pendingNetex.has(name)) continue;
     objects.push({ name, subject: target[1], scope: 'NordicProfile', documentation: docs.get(name), source: 'netex-nordic.ttl' });
     pathMatches.forEach((pathMatch, index) => {
       const path = localName(pathMatch[1]);
@@ -126,7 +135,10 @@ const extractNetex = (text, documentation) => {
       rules.push({ name, path, cardinality: min || max ? `${min ? min[1] : '0'}..${max ? max[1] : 'many'}` : 'constrained', description, source: `netex-nordic.ttl · rule ${index + 1}` });
     });
   }
-  return { objects, rules, pending: [...pendingNetex].map((name) => ({ name, subject: `netex:${name}`, status: 'under consideration', description: 'Present in the source model, but not part of the current Nordic Profile.' })) };
+  // Whether something is pending/national is a baseline-scope question
+  // (extractNordicBaseline handles it dynamically from real source data);
+  // SHACL shapes have no such field to read, so this never fabricates one.
+  return { objects, rules, pending: [] };
 };
 
 const extractSiri = (text, baseline = '') => {
@@ -216,6 +228,7 @@ const render = () => {
   const objects = data.objects.filter(matches);
   const rules = data.rules.filter(matches);
   const pending = data.pending.filter(matches);
+  const national = (data.national || []).filter(matches);
   const displayedObjects = objects;
   document.querySelector('#terms-title').textContent = `${sources[format].label} profile`;
   document.querySelector('#profile-status').textContent = `${displayedObjects.length}${objects.length > displayedObjects.length ? ` of ${objects.length}` : ''} objects · ${rules.length} profile rules shown`;
@@ -225,8 +238,17 @@ const render = () => {
   const pendingPanel = document.querySelector('#pending-panel');
   pendingPanel.hidden = !pending.length;
   document.querySelector('#pending-title').textContent = format === 'siri' ? 'Outside Nordic scope' : 'Under consideration';
-  document.querySelector('#pending-note').textContent = format === 'siri' ? 'Present in the SIRI source, but marked extended, conditional or not-in-scope.' : 'This is the CCB view of items classified as NordicCandidate in the source. EnturExtension items are kept outside this queue.';
+  document.querySelector('#pending-note').textContent = format === 'siri' ? 'Present in the SIRI source, but marked extended, conditional or not-in-scope.' : 'This is the CCB view of items classified as NordicCandidate in the baseline.';
   document.querySelector('#pending-list').innerHTML = pending.map((entry) => `<article class="pending-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(entry.name)}</h3><span>${escapeHtml(entry.status)}</span></div><p>${escapeHtml(entry.description)} Requires CCB treatment before inclusion.</p><code>${escapeHtml(entry.subject)}</code><small>Candidate for a new decision</small></div></article>`).join('');
+  const nationalPanel = document.querySelector('#national-panel');
+  if (nationalPanel) {
+    nationalPanel.hidden = format === 'siri' || !national.length;
+    document.querySelector('#national-list').innerHTML = national.map((entry) => {
+      const fields = entry.fields || [];
+      const fieldsSummary = fields.length ? `<div class="object-fields"><strong>Fields documented (${fields.length})</strong>${fields.slice(0, 8).map((field) => `<span><code>${escapeHtml(field.path)}</code> ${escapeHtml(field.cardinality)}</span>`).join('')}</div>` : '';
+      return `<article class="pending-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(entry.name)}</h3><span>national</span></div><p>Documented with reusable field definitions, but not assigned to the shared Nordic profile.</p>${fieldsSummary}<code>${escapeHtml(entry.subject)}</code></div></article>`;
+    }).join('');
+  }
   if (!objects.length && !rules.length) {
     document.querySelector('#profile-list').innerHTML = '<div class="profile-loading">No entries match this format or search.</div>';
     return;
@@ -286,7 +308,8 @@ const load = async () => {
     state.netex = {
       objects: [...objects.values()],
       rules: overlay.rules,
-      pending: [...new Map([...baselineData.pending, ...overlay.pending].map((item) => [item.name, item])).values()]
+      pending: [...new Map([...baselineData.pending, ...overlay.pending].map((item) => [item.name, item])).values()],
+      national: baselineData.national
     };
     state.siri = extractSiri(siri, siriBaseline);
     document.querySelector('#profile-source-count').textContent = 'NeTEx, SIRI, SIRI baseline and documentation read';
