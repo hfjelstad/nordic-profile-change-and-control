@@ -65,13 +65,14 @@ jobs:
               --head "$branch" --base main)
             echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
 
-            # Queues the merge rather than merging it now: with no branch
-            # protection yet this merges as soon as checks pass (today, right
-            # away), but once CODEOWNERS + required reviews are switched on
-            # later, the exact same queued auto-merge will correctly wait for
-            # every required approval first. Nothing here needs to change
-            # when the gate is added.
-            gh pr merge "$pr_url" --auto --squash
+            # Queues the merge rather than merging it now: once CODEOWNERS +
+            # required reviews are switched on later, this correctly waits
+            # for every required approval before merging, with nothing here
+            # needing to change. Today there is no branch protection, so the
+            # PR is immediately mergeable ("clean"), and GitHub's auto-merge
+            # API refuses to queue a merge with nothing to wait for - in that
+            # case just merge it directly instead.
+            gh pr merge "$pr_url" --auto --squash || gh pr merge "$pr_url" --squash
           fi
 
       - name: Comment back on the issue
