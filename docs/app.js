@@ -140,9 +140,6 @@ const loadProfileData = async () => {
     const decisions = await Promise.all(files
       .filter((file) => file.name.endsWith('.yaml') && file.name !== 'DECISION-TEMPLATE.yaml')
       .map((file) => getText(file.download_url).then((text) => ({ file, text }))));
-    const accepted = decisions.filter(({ text }) => field(text, 'status') === 'accepted' || field(text, 'status') === 'implemented');
-    document.querySelector('#accepted-count').textContent = accepted.length;
-    document.querySelector('#open-count').textContent = issues.length;
     document.querySelector('#decision-count').textContent = decisions.length.toString().padStart(2, '0');
     document.querySelector('#issue-count').textContent = issues.length.toString().padStart(2, '0');
     decisionList.replaceChildren(...(decisions.length
@@ -151,8 +148,6 @@ const loadProfileData = async () => {
     issueList.replaceChildren(...(issues.filter((issue) => !issue.pull_request).slice(0, 6).map((issue, index) => proposalItem(String(index + 1).padStart(2, '0'), issue))));
     if (!issueList.children.length) showMessage(issueList, 'No open proposals at the moment.');
   } catch (error) {
-    document.querySelector('#accepted-count').textContent = '—';
-    document.querySelector('#open-count').textContent = '—';
     document.querySelector('#decision-count').textContent = '—';
     document.querySelector('#issue-count').textContent = '—';
     showMessage(decisionList, 'The decision register is temporarily unavailable.');
