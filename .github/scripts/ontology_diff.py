@@ -151,11 +151,15 @@ def structural_wrapper_names(root) -> set:
 
 def xml_attribute_paths(root) -> set:
     """Non-generic "Element/@attribute" pairs actually used in the submitted
-    XML, e.g. "PrivateCode/@type". A wrapper filtered out of the element
-    comparison can still carry an attribute on its content element that is
-    the real substance of a proposal (e.g. a new `type` letting PrivateCode
-    repeat with different meanings inside "privateCodes"), so this is
-    checked independently of structural_wrapper_names."""
+    XML, e.g. "PrivateCode/@type". The baseline only ever documents the
+    generic id/ref/version/order attributes, never anything content-specific,
+    so there is nothing meaningful to diff attributes against; this is
+    reported as-is rather than framed as a baseline comparison. A wrapper
+    filtered out of the element comparison can still carry an attribute on
+    its content element that is the real substance of a proposal (e.g. a new
+    `type` letting PrivateCode repeat with different meanings inside
+    "privateCodes"), so this is checked independently of
+    structural_wrapper_names."""
     paths = set()
     for element in root.iter():
         tag = element.tag
@@ -165,22 +169,6 @@ def xml_attribute_paths(root) -> set:
             if attr_local not in GENERIC_ATTRIBUTES:
                 paths.add(f"{local}/@{attr_local}")
     return paths
-
-
-def baseline_attribute_paths(baseline_text: str) -> set:
-    """Known "Element/@attribute" pairs already documented in the baseline,
-    parsed from nordic:path values that end in "/@attr" (e.g.
-    "AlternativeText/@id"). Generic attributes are skipped on this side too,
-    so an element that only ever documented @id/@version isn't mistaken for
-    having documented some other, unrelated attribute."""
-    known = set()
-    for match in re.finditer(r'nordic:path\s+"([^"]*)"', baseline_text):
-        segments = [segment.strip() for segment in match.group(1).split("/") if segment.strip()]
-        if len(segments) >= 2 and segments[-1].startswith("@"):
-            owner, attr = segments[-2], segments[-1][1:]
-            if attr not in GENERIC_ATTRIBUTES:
-                known.add(f"{owner}/@{attr}")
-    return known
 
 
 def classify(xml_names: set, baseline_profiles: dict, status_map: dict, in_scope_profile: str):
@@ -228,7 +216,7 @@ def build_report(xml_text: str) -> str:
 
     content_names = names - wrapper_names
 
-    new_attribute_paths = sorted(xml_attribute_paths(root) - baseline_attribute_paths(baseline_text))
+    attribute_paths = sorted(xml_attribute_paths(root))
 
     in_scope, other_profile, other_status, unmatched = classify(
         content_names, baseline_profiles, status_map, config["in_scope_profile"]
@@ -265,15 +253,16 @@ def build_report(xml_text: str) -> str:
         )
         lines.append(", ".join(f"`{name}`" for name in unmatched))
 
-    if new_attribute_paths:
+    if attribute_paths:
         lines.append("")
         lines.append(
-            "Attributes used that are not documented on that element in the baseline. "
-            "A wrapper around the element may be filtered out above as pure XML structure, "
-            "but the attribute itself can be the actual substance of the proposal (e.g. a "
-            "type distinguishing repeated codes):"
+            "Non-generic attributes used in the example (id/version/ref/order/lang/etc. "
+            "omitted as structural boilerplate). The baseline rarely documents attributes "
+            "beyond those, so this is informational rather than a baseline comparison — an "
+            "attribute here can be the actual substance of a proposal (e.g. a type "
+            "distinguishing repeated codes):"
         )
-        lines.append(", ".join(f"`{path}`" for path in new_attribute_paths))
+        lines.append(", ".join(f"`{path}`" for path in attribute_paths))
 
     if documented_elsewhere:
         lines.append("")
