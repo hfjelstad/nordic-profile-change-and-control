@@ -22,8 +22,7 @@ def fetch(url: str) -> str:
         return response.read().decode("utf-8", errors="replace")
 
 
-def local_element_names(xml_text: str) -> set:
-    root = ET.fromstring(xml_text)
+def local_element_names(root) -> set:
     names = set()
     for element in root.iter():
         tag = element.tag
@@ -106,27 +105,38 @@ def profile_status_map(profile_text: str, prefix: str) -> dict:
     return statuses
 
 
-def known_wrapper_names(baseline_text: str) -> set:
-    """Lowercase-first path segments already documented somewhere in the
-    baseline (e.g. "keyList" in "StopPlace/keyList/KeyValue"). nordic:element
-    only ever holds the leaf name, so a wrapper segment only shows up in
-    nordic:path values, which this parses separately from _field_element_names."""
-    names = set()
-    for match in re.finditer(r'nordic:path\s+"([^"]*)"', baseline_text):
-        for name in _field_element_names(match.group(1)):
-            if name[:1].islower():
-                names.add(name)
-    return names
-
-
-def is_structural_wrapper(name: str, known_wrappers: set) -> bool:
-    """True only for lowercase-first names already used as a collection
-    wrapper elsewhere in the baseline (e.g. "quays", "keyList"), which are
-    mechanical XML structure, never a CCB decision. A lowercase-first name
-    that is NOT already known this way must stay visible: it can itself be
-    the substance of a proposal (e.g. wrapping a previously singular
-    PrivateCode in a new, repeatable "privateCodes" collection)."""
-    return name[:1].islower() and name in known_wrappers
+def structural_wrapper_names(root) -> set:
+    """Lowercase-first element names that are pure XML structure rather than
+    profile content. NeTEx/SIRI consistently use lowerCamelCase only for two
+    things: collection wrappers (e.g. "quays", "privateCodes", "stopPlaces")
+    that hold nothing but repeated PascalCase object elements, and scalar
+    leaf properties (e.g. "isAvailable") that hold text and no children. A
+    name only counts as a wrapper here if every occurrence in this document
+    has at least one child element, all of those children are PascalCase,
+    and the wrapper itself carries no text of its own — this holds regardless
+    of whether that particular wrapper/child pairing has ever been seen in
+    the baseline before, so a proposal that puts an already-accepted class
+    (e.g. StopPlace, PrivateCode) inside a new wrapper doesn't wrongly flag
+    the wrapper name itself as unmatched content."""
+    info = {}
+    for element in root.iter():
+        tag = element.tag
+        local = tag.split("}")[-1] if "}" in tag else tag
+        if not local[:1].islower():
+            continue
+        children = list(element)
+        child_locals = [c.tag.split("}")[-1] if "}" in c.tag else c.tag for c in children]
+        entry = info.setdefault(local, {"has_children": False, "all_upper": True, "has_text": False})
+        if children:
+            entry["has_children"] = True
+        if any(not child[:1].isupper() for child in child_locals):
+            entry["all_upper"] = False
+        if (element.text or "").strip():
+            entry["has_text"] = True
+    return {
+        name for name, entry in info.items()
+        if entry["has_children"] and entry["all_upper"] and not entry["has_text"]
+    }
 
 
 def classify(xml_names: set, baseline_profiles: dict, status_map: dict, in_scope_profile: str):
@@ -149,7 +159,9 @@ def build_report(xml_text: str) -> str:
     config = STANDARDS[standard]
 
     try:
-        names = local_element_names(xml_text)
+        root = ET.fromstring(xml_text)
+        names = local_element_names(root)
+        wrapper_names = structural_wrapper_names(root)
         baseline_text = fetch(config["baseline_url"])
         class_profiles = baseline_profile_map(
             baseline_text, config["ontology_prefix"], config["in_scope_profile"]
@@ -170,7 +182,6 @@ def build_report(xml_text: str) -> str:
             "This is best-effort enrichment, not a required check.\n"
         )
 
-    wrapper_names = {name for name in names if is_structural_wrapper(name, known_wrapper_names(baseline_text))}
     content_names = names - wrapper_names
 
     in_scope, other_profile, other_status, unmatched = classify(
