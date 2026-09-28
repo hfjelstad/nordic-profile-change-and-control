@@ -17,13 +17,16 @@ import xml.etree.ElementTree as ET
 from standards import STANDARDS, detect_standard
 
 # Generic NeTEx/SIRI envelope attributes every versioned entity or Ref
-# element carries (id/version/ref/lifecycle bookkeeping/lang). These are
-# structural boilerplate, never themselves a CCB decision, so they are
-# excluded from attribute comparison the same way lowercase wrappers are
-# excluded from element comparison.
+# element carries (id/version/ref/lifecycle bookkeeping). These come from
+# the base EntityInVersionStructure/VersionOfObjectRefStructure types, not a
+# Nordic-specific choice, which is why the baseline never bothers documenting
+# them per class either (confirmed empirically: id/ref/version/order are the
+# only attributes the baseline documents at all, ~50-57 times each). Anything
+# else - including `lang`, which IS a real content/profile decision about
+# which languages are expected - must stay visible.
 GENERIC_ATTRIBUTES = {
     "id", "version", "ref", "created", "changed", "modification",
-    "order", "lang", "status", "versionRef",
+    "order", "status",
 }
 
 
@@ -246,11 +249,12 @@ def build_report(xml_text: str) -> str:
     if attribute_paths:
         lines.append("")
         lines.append(
-            "Non-generic attributes used in the example (id/version/ref/order/lang/etc. "
-            "omitted as structural boilerplate). The baseline rarely documents attributes "
-            "beyond those, so this is informational rather than a baseline comparison — an "
-            "attribute here can be the actual substance of a proposal (e.g. a type "
-            "distinguishing repeated codes):"
+            "Non-generic attributes used in the example (id/version/ref/order/created/"
+            "changed/modification/status omitted as structural version-envelope "
+            "boilerplate). The baseline rarely documents attributes beyond those, so this "
+            "is informational rather than a baseline comparison — an attribute here can be "
+            "the actual substance of a proposal (e.g. a type distinguishing repeated codes, "
+            "or a lang saying which languages are expected):"
         )
         lines.append(", ".join(f"`{path}`" for path in attribute_paths))
 
