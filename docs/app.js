@@ -42,6 +42,54 @@ const listItem = (marker, title, detail, state = '') => {
   return item;
 };
 
+const escapeHtml = (text) => text.replace(/[&<>]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[char]));
+
+// The "Description" field of an issue form is a "### Description" heading
+// followed by free text up to the next "### " heading or the end of the body.
+const issueDescription = (body) => {
+  const match = body.match(/### Description\s*\n([\s\S]*?)(?=\n### |$)/);
+  const text = match ? match[1].trim() : '';
+  return text && text !== '_No response_' ? text : '';
+};
+
+// A proposal issue you can click to expand: fetched lazily (only on first
+// expand) so loading the page doesn't burn through the unauthenticated
+// GitHub API rate limit fetching comments for every open proposal at once.
+const proposalItem = (marker, issue) => {
+  const item = document.createElement('li');
+  item.className = 'proposal-item';
+  const labels = issue.labels.map((label) => label.name).join(', ') || 'proposed';
+  item.innerHTML = `
+    <button type="button" class="proposal-toggle" aria-expanded="false">
+      <span class="list-marker">${marker}</span>
+      <span><strong>${escapeHtml(issue.title)}</strong><small>Issue #${issue.number} · ${escapeHtml(labels)}</small></span>
+    </button>
+    <div class="proposal-detail" hidden></div>`;
+  const button = item.querySelector('.proposal-toggle');
+  const detail = item.querySelector('.proposal-detail');
+  let loaded = false;
+  button.addEventListener('click', async () => {
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    button.setAttribute('aria-expanded', String(!expanded));
+    detail.hidden = expanded;
+    if (expanded || loaded) return;
+    loaded = true;
+    detail.innerHTML = '<p class="proposal-loading">Loading proposal detail...</p>';
+    try {
+      const comments = await getJson(issue.comments_url);
+      const description = issueDescription(issue.body || '');
+      const check = [...comments].reverse().find((comment) => comment.user.login === 'github-actions[bot]');
+      detail.innerHTML = `
+        ${description ? `<p class="proposal-description">${escapeHtml(description)}</p>` : ''}
+        ${check ? `<pre class="proposal-check">${escapeHtml(check.body)}</pre>` : '<p class="proposal-loading">No automated check comment yet.</p>'}
+        <a class="proposal-cta" href="${issue.html_url}" target="_blank" rel="noreferrer">Open on GitHub, add the <code>accept</code> label to draft a decision <span aria-hidden="true">↗</span></a>`;
+    } catch (error) {
+      detail.innerHTML = '<p class="proposal-loading">Could not load proposal detail right now.</p>';
+    }
+  });
+  return item;
+};
+
 const showMessage = (element, message) => {
   element.innerHTML = `<li class="register-empty"><span class="list-marker">--</span><span>${message}</span></li>`;
 };
@@ -65,7 +113,7 @@ const loadProfileData = async () => {
     decisionList.replaceChildren(...(decisions.length
       ? decisions.map(({ text }, index) => listItem(String(index + 1).padStart(2, '0'), field(text, 'title') || field(text, 'id'), subject(text) || field(text, 'standard'), field(text, 'status')))
       : [Object.assign(document.createElement('li'), { className: 'register-empty', innerHTML: '<span class="list-marker">--</span><span>No decisions have been accepted yet.</span>' })]));
-    issueList.replaceChildren(...(issues.filter((issue) => !issue.pull_request).slice(0, 6).map((issue, index) => listItem(String(index + 1).padStart(2, '0'), issue.title, `Issue #${issue.number}`, issue.labels.map((label) => label.name).join(', ') || 'proposed'))));
+    issueList.replaceChildren(...(issues.filter((issue) => !issue.pull_request).slice(0, 6).map((issue, index) => proposalItem(String(index + 1).padStart(2, '0'), issue))));
     if (!issueList.children.length) showMessage(issueList, 'No open proposals at the moment.');
   } catch (error) {
     document.querySelector('#accepted-count').textContent = '—';
