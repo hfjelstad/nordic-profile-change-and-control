@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-04-17T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:ResponsibilitySetExample" version="1">
+            <codespaces>
+                <Codespace id="nog">
+                    <Xmlns>NOG</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+                <Codespace id="nar">
+                    <Xmlns>NAR</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://entransit.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <!-- Avtaleregister: who is responsible for a line, and under which contract -->
+                <ResourceFrame id="NAR:ResourceFrame:AvtaleRegister" version="1">
+                    <responsibilitySets>
+                        <ResponsibilitySet id="NAR:ResponsibilitySet:Oslo-Berlin" version="1">
+                            <Name>Oslo - Berlin</Name>
+                            <roles>
+                                <ResponsibilityRoleAssignment id="NAR:ResponsibilityRoleAssignment:19213" version="1">
+                                    <AssociatedContract>
+                                        <ContractRef ref="NAR:Contract:Oslo-Berlin"/>
+                                    </AssociatedContract>
+                                </ResponsibilityRoleAssignment>
+                            </roles>
+                        </ResponsibilitySet>
+                    </responsibilitySets>
+                    <contracts>
+                        <Contract id="NAR:Contract:Oslo-Berlin" version="1">
+                            <contractees>
+                                <GeneralOrganisationRef ref="NOG:GeneralOrganisation:Vy"/>
+                            </contractees>
+                            <contractors>
+                                <GeneralOrganisationRef ref="NOG:GeneralOrganisation:Vy"/>
+                            </contractors>
+                        </Contract>
+                    </contracts>
+                </ResourceFrame>
+
+                <!-- responsibilitySetRef in use on Line -->
+                <ServiceFrame id="ENT:ServiceFrame:OsloBerlin" version="1">
+                    <lines>
+                        <Line id="ENT:Line:OsloBerlin" version="1" responsibilitySetRef="NAR:ResponsibilitySet:Oslo-Berlin">
+                            <Name>Oslo–Berlin</Name>
+                            <TransportMode>rail</TransportMode>
+                        </Line>
+                    </lines>
+                </ServiceFrame>
+
+                <!-- responsibilitySetRef in use on ServiceJourney -->
+                <TimetableFrame id="ENT:TimetableFrame:OsloBerlin" version="1">
+                    <vehicleJourneys>
+                        <ServiceJourney id="ENT:ServiceJourney:191" version="1" responsibilitySetRef="NAR:ResponsibilitySet:VyOperator">
+                            <Name>Oslo–Berlin</Name>
+                            <TransportMode>rail</TransportMode>
+                            <LineRef ref="ENT:Line:OsloBerlin"/>
+                        </ServiceJourney>
+                    </vehicleJourneys>
+                </TimetableFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
