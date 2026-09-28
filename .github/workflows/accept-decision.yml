@@ -1,0 +1,64 @@
+name: Accept decision
+
+# The mechanical replacement for "someone hand-writes the decision YAML":
+# add the "accept" label to a CCB issue that has an XML file attached, and
+# this derives the decision file straight from the already-computed ontology
+# diff (class/property/path/cardinality/codes) plus the issue's own title
+# and Description field (copied verbatim) - no free-text interpretation.
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  accept:
+    if: github.event.label.name == 'accept'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Derive decision file(s) from the issue's XML
+        id: draft
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python .github/scripts/draft_decision.py "${{ github.event.issue.number }}" "${{ github.event.issue.title }}" \
+            | tee "${{ runner.temp }}/draft-decision.log"
+
+      - name: Commit new decision file(s)
+        if: success()
+        run: |
+          if git status --porcelain decisions/ | grep -q .; then
+            git config user.name "nordic-profile-ccb-bot"
+            git config user.email "actions@github.com"
+            git add decisions/
+            git commit -m "Accept decision for issue #${{ github.event.issue.number }} (mechanically derived)"
+            git push origin main
+          fi
+
+      - name: Comment back on the issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -s "${{ runner.temp }}/draft-decision.log" ]; then
+            echo "Mechanically derived from this issue's XML (no manual write-up):" > "${{ runner.temp }}/comment.md"
+            echo '```' >> "${{ runner.temp }}/comment.md"
+            cat "${{ runner.temp }}/draft-decision.log" >> "${{ runner.temp }}/comment.md"
+            echo '```' >> "${{ runner.temp }}/comment.md"
+          else
+            echo "Could not mechanically derive a decision from this issue (no XML file attached, or the check failed). See the workflow run for details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" > "${{ runner.temp }}/comment.md"
+          fi
+          gh issue comment "${{ github.event.issue.number }}" --repo ${{ github.repository }} --body-file "${{ runner.temp }}/comment.md"

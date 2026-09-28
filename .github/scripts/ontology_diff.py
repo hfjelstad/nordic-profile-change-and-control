@@ -186,6 +186,159 @@ def classify(xml_names: set, baseline_profiles: dict, status_map: dict, in_scope
     return in_scope, other_profile, other_status, unmatched
 
 
+def build_parent_map(root) -> dict:
+    return {child: parent for parent in root.iter() for child in parent}
+
+
+def local_name(tag: str) -> str:
+    return tag.split("}")[-1] if "}" in tag else tag
+
+
+def nearest_known_class(element, parent_map: dict, known_names: set):
+    """Walks up from an element to the nearest ancestor whose tag is already
+    a known class/field name (in the baseline or the structural model), so a
+    new attribute or element can be anchored to a concrete subject.class
+    without a human having to say which class it belongs to."""
+    node = parent_map.get(element)
+    while node is not None:
+        name = local_name(node.tag)
+        if name in known_names:
+            return name, node
+        node = parent_map.get(node)
+    return None, None
+
+
+def path_from_class(element, class_node, parent_map: dict) -> str:
+    segments = [local_name(element.tag)]
+    node = parent_map.get(element)
+    while node is not None:
+        segments.append(local_name(node.tag))
+        if node is class_node:
+            break
+        node = parent_map.get(node)
+    return "/".join(reversed(segments))
+
+
+def cardinality_for(element, parent_map: dict, wrapper_names: set) -> str:
+    parent = parent_map.get(element)
+    if parent is not None and local_name(parent.tag) in wrapper_names:
+        return "0..n"
+    return "0..1"
+
+
+def compute_diff(xml_text: str) -> dict:
+    """Everything build_report() needs, factored out so a second consumer
+    (candidate_subjects) can derive mechanical decision-file candidates from
+    the same parsed data without re-implementing the ontology lookups."""
+    standard = detect_standard(xml_text)
+    if standard is None:
+        return {}
+    config = STANDARDS[standard]
+
+    root = ET.fromstring(xml_text)
+    names = local_element_names(root)
+    wrapper_names = structural_wrapper_names(root)
+    baseline_text = fetch(config["baseline_url"])
+    class_profiles = baseline_profile_map(
+        baseline_text, config["ontology_prefix"], config["in_scope_profile"]
+    )
+    baseline_profiles = {
+        **field_profile_map(baseline_text, config["ontology_prefix"], config["in_scope_profile"], class_profiles),
+        **class_profiles,
+    }
+    status_map = profile_status_map(fetch(config["profile_url"]), config["ontology_prefix"])
+    model_names = model_known_names(fetch(config["model_url"]), config["ontology_prefix"]) if config.get("model_url") else set()
+
+    content_names = names - wrapper_names
+    attribute_paths = sorted(xml_attribute_paths(root))
+    in_scope, other_profile, other_status, unmatched = classify(
+        content_names, baseline_profiles, status_map, config["in_scope_profile"]
+    )
+    documented_elsewhere = sorted(name for name in unmatched if name in model_names)
+    unmatched = [name for name in unmatched if name not in model_names]
+
+    return {
+        "config": config, "root": root, "names": names, "wrapper_names": wrapper_names,
+        "baseline_profiles": baseline_profiles, "model_names": model_names,
+        "attribute_paths": attribute_paths, "in_scope": in_scope, "other_profile": other_profile,
+        "other_status": other_status, "unmatched": unmatched, "documented_elsewhere": documented_elsewhere,
+    }
+
+
+def candidate_subjects(xml_text: str):
+    """Mechanically derived decision-file candidates: one per genuinely new
+    element or new attribute, each anchored to the nearest already-known
+    ancestor class with a path and cardinality read straight off the XML
+    DOM. No free-text interpretation involved - anything that cannot be
+    anchored this way (no known ancestor class in the document) is returned
+    separately as "needs manual subject" rather than guessed at."""
+    try:
+        diff = compute_diff(xml_text)
+    except Exception as error:  # network failure or unexpected ontology format
+        return [], [f"could not compute the ontology diff ({error})"]
+    if not diff:
+        return [], []
+
+    root = diff["root"]
+    parent_map = build_parent_map(root)
+    known_names = set(diff["baseline_profiles"]) | diff["model_names"]
+
+    candidates, unresolved = [], []
+
+    for element in root.iter():
+        name = local_name(element.tag)
+        if name in diff["unmatched"]:
+            class_name, class_node = nearest_known_class(element, parent_map, known_names)
+            if class_node is None:
+                unresolved.append(f"element `{name}` has no known ancestor class in this document")
+                continue
+            candidates.append({
+                "kind": "new-element",
+                "class": class_name,
+                "property": name,
+                "path": path_from_class(element, class_node, parent_map),
+                "cardinality": cardinality_for(element, parent_map, diff["wrapper_names"]),
+            })
+        for attr_name in element.attrib:
+            path = f"{name}/@{attr_name}"
+            if path not in diff["attribute_paths"]:
+                continue
+            class_name, class_node = nearest_known_class(element, parent_map, known_names)
+            if class_node is None:
+                unresolved.append(f"attribute `{path}` has no known ancestor class in this document")
+                continue
+            candidates.append({
+                "kind": "new-attribute",
+                "class": class_name,
+                "property": name,
+                "attribute": attr_name,
+                "path": path_from_class(element, class_node, parent_map),
+                "cardinality": cardinality_for(element, parent_map, diff["wrapper_names"]),
+                # The actual values seen for this attribute in the document,
+                # e.g. "uicCode" - read off the XML, not guessed at, so
+                # decision.rule.codes can be filled in mechanically too.
+                "values": {element.attrib[attr_name]},
+            })
+
+    # Each attribute is only worth one candidate even if it repeats on several
+    # sibling elements (e.g. the same @type on ten PrivateCode instances);
+    # merge their observed values instead of just keeping the first one seen.
+    merged = {}
+    order = []
+    for candidate in candidates:
+        key = (candidate["kind"], candidate["class"], candidate["property"], candidate.get("attribute"))
+        if key not in merged:
+            merged[key] = candidate
+            order.append(key)
+        elif "values" in candidate:
+            merged[key]["values"] |= candidate["values"]
+    deduped = [merged[key] for key in order]
+    for candidate in deduped:
+        if "values" in candidate:
+            candidate["values"] = sorted(candidate["values"])
+    return deduped, unresolved
+
+
 def build_report(xml_text: str) -> str:
     standard = detect_standard(xml_text)
     if standard is None:
@@ -193,22 +346,7 @@ def build_report(xml_text: str) -> str:
     config = STANDARDS[standard]
 
     try:
-        root = ET.fromstring(xml_text)
-        names = local_element_names(root)
-        wrapper_names = structural_wrapper_names(root)
-        baseline_text = fetch(config["baseline_url"])
-        class_profiles = baseline_profile_map(
-            baseline_text, config["ontology_prefix"], config["in_scope_profile"]
-        )
-        # Most of the baseline is nested field members of a class (e.g.
-        # Quay's AccessibilityAssessment), not top-level class declarations,
-        # so both maps are needed; class-level wins if a name is both.
-        baseline_profiles = {
-            **field_profile_map(baseline_text, config["ontology_prefix"], config["in_scope_profile"], class_profiles),
-            **class_profiles,
-        }
-        status_map = profile_status_map(fetch(config["profile_url"]), config["ontology_prefix"])
-        model_names = model_known_names(fetch(config["model_url"]), config["ontology_prefix"]) if config.get("model_url") else set()
+        diff = compute_diff(xml_text)
     except Exception as error:  # network failure or unexpected ontology format
         return (
             f"\n## Elements used vs. the current {config['ontology_label']} profile\n\n"
@@ -216,18 +354,14 @@ def build_report(xml_text: str) -> str:
             "This is best-effort enrichment, not a required check.\n"
         )
 
-    content_names = names - wrapper_names
-
-    attribute_paths = sorted(xml_attribute_paths(root))
-
-    in_scope, other_profile, other_status, unmatched = classify(
-        content_names, baseline_profiles, status_map, config["in_scope_profile"]
-    )
-    # The structural model is a separate curated overlay (frame containment,
-    # childOf, hasElement), not the baseline/profile files classify() already
-    # checked, so split it out from unmatched rather than re-running classify.
-    documented_elsewhere = sorted(name for name in unmatched if name in model_names)
-    unmatched = [name for name in unmatched if name not in model_names]
+    names = diff["names"]
+    wrapper_names = diff["wrapper_names"]
+    attribute_paths = diff["attribute_paths"]
+    in_scope = diff["in_scope"]
+    other_profile = diff["other_profile"]
+    other_status = diff["other_status"]
+    unmatched = diff["unmatched"]
+    documented_elsewhere = diff["documented_elsewhere"]
 
     lines = ["", f"## Elements used vs. the current {config['ontology_label']} profile", ""]
     lines.append(f"Found {len(names)} distinct element names in the example.")
