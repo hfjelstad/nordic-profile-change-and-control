@@ -16,6 +16,16 @@ import xml.etree.ElementTree as ET
 
 from standards import STANDARDS, detect_standard
 
+# Generic NeTEx/SIRI envelope attributes every versioned entity or Ref
+# element carries (id/version/ref/lifecycle bookkeeping/lang). These are
+# structural boilerplate, never themselves a CCB decision, so they are
+# excluded from attribute comparison the same way lowercase wrappers are
+# excluded from element comparison.
+GENERIC_ATTRIBUTES = {
+    "id", "version", "ref", "created", "changed", "modification",
+    "order", "lang", "status", "versionRef",
+}
+
 
 def fetch(url: str) -> str:
     with urllib.request.urlopen(url, timeout=15) as response:
@@ -139,6 +149,40 @@ def structural_wrapper_names(root) -> set:
     }
 
 
+def xml_attribute_paths(root) -> set:
+    """Non-generic "Element/@attribute" pairs actually used in the submitted
+    XML, e.g. "PrivateCode/@type". A wrapper filtered out of the element
+    comparison can still carry an attribute on its content element that is
+    the real substance of a proposal (e.g. a new `type` letting PrivateCode
+    repeat with different meanings inside "privateCodes"), so this is
+    checked independently of structural_wrapper_names."""
+    paths = set()
+    for element in root.iter():
+        tag = element.tag
+        local = tag.split("}")[-1] if "}" in tag else tag
+        for attr_name in element.attrib:
+            attr_local = attr_name.split("}")[-1] if "}" in attr_name else attr_name
+            if attr_local not in GENERIC_ATTRIBUTES:
+                paths.add(f"{local}/@{attr_local}")
+    return paths
+
+
+def baseline_attribute_paths(baseline_text: str) -> set:
+    """Known "Element/@attribute" pairs already documented in the baseline,
+    parsed from nordic:path values that end in "/@attr" (e.g.
+    "AlternativeText/@id"). Generic attributes are skipped on this side too,
+    so an element that only ever documented @id/@version isn't mistaken for
+    having documented some other, unrelated attribute."""
+    known = set()
+    for match in re.finditer(r'nordic:path\s+"([^"]*)"', baseline_text):
+        segments = [segment.strip() for segment in match.group(1).split("/") if segment.strip()]
+        if len(segments) >= 2 and segments[-1].startswith("@"):
+            owner, attr = segments[-2], segments[-1][1:]
+            if attr not in GENERIC_ATTRIBUTES:
+                known.add(f"{owner}/@{attr}")
+    return known
+
+
 def classify(xml_names: set, baseline_profiles: dict, status_map: dict, in_scope_profile: str):
     in_scope, other_profile, other_status, unmatched = [], [], [], []
     for name in sorted(xml_names):
@@ -184,6 +228,8 @@ def build_report(xml_text: str) -> str:
 
     content_names = names - wrapper_names
 
+    new_attribute_paths = sorted(xml_attribute_paths(root) - baseline_attribute_paths(baseline_text))
+
     in_scope, other_profile, other_status, unmatched = classify(
         content_names, baseline_profiles, status_map, config["in_scope_profile"]
     )
@@ -218,6 +264,16 @@ def build_report(xml_text: str) -> str:
             "genuinely new element this proposal introduces:"
         )
         lines.append(", ".join(f"`{name}`" for name in unmatched))
+
+    if new_attribute_paths:
+        lines.append("")
+        lines.append(
+            "Attributes used that are not documented on that element in the baseline. "
+            "A wrapper around the element may be filtered out above as pure XML structure, "
+            "but the attribute itself can be the actual substance of the proposal (e.g. a "
+            "type distinguishing repeated codes):"
+        )
+        lines.append(", ".join(f"`{path}`" for path in new_attribute_paths))
 
     if documented_elsewhere:
         lines.append("")
