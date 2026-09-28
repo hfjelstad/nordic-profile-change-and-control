@@ -1,0 +1,62 @@
+id: NP-0001
+title: Allow a typed PrivateCode on StopPlace (UIC station code)
+status: accepted
+standard: netex
+profile: nordic-core
+profileVersion: null
+subject:
+  class: netex:StopPlace
+  property: netex:PrivateCode
+  service: null
+  message: null
+  qname: netex:PrivateCode/@type
+  request: null
+  delivery: null
+  referenceTarget: null
+  # Extends the template's subject shape with the two fields the generator
+  # needs to place this inside StopPlace's existing nordic:ProfileMember
+  # block list; CONSUMER-CONTRACT.md flags structural fields like this as
+  # still first-generation / evolving.
+  path: StopPlace/privateCodes/PrivateCode
+decision:
+  type: optional
+  rule:
+    minCount: 0
+    maxCount: null
+    class: null
+    datatype: xsd:string
+    in: []
+    condition: null
+    codes: [uicCode]
+    timing: null
+    reference: null
+rationale: >-
+  StopPlace has no PrivateCode field in the Nordic baseline today (PrivateCode
+  is only accepted on Line, Quay, GroupOfLines and ServiceJourney). Rail
+  stations also carry an internationally recognised UIC station code, needed
+  for cross-border interoperability (ticketing, TAF/TAP TSI, SIRI-FM). This
+  decision adds PrivateCode as a repeatable field of StopPlace, wrapped in the
+  standard NeTEx privateCodes collection (matching the existing
+  StopPlace/quays/Quay wrapping pattern), with the type attribute set to
+  "uicCode" to disambiguate it from any other external code system that may
+  be proposed later. Scoped to the UIC use case shown in the evidence; other
+  private code types on StopPlace need a separate follow-up decision.
+scope:
+  countries: [NO, SE, FI, DK]
+  organisations: []
+evidence:
+  - nsr_uic_stops_current_with_mct.xml (attached to issue #21)
+impact:
+  breakingChange: false
+  affectedSystems: []
+ccb:
+  proposedBy: hfjelstad
+  reviewers: [hfjelstad]
+  decisionDate: 2026-09-28
+  decisionVersion: null
+  effectiveFrom: null
+  issue: 21
+links:
+  issues: [21]
+  relatedDecisions: []
+  implementations: []
