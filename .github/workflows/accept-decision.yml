@@ -9,7 +9,10 @@ name: Accept decision
 # This opens a PR rather than committing straight to main: the PR review is
 # the actual safety gate, not who was allowed to add the label. That also
 # means the trigger itself can be relaxed later (e.g. a public button) without
-# ever letting anything land on main without a human merging it.
+# ever letting anything land on main without a human merging it. The PR is
+# also set to auto-merge, so merging itself needs no separate click either -
+# GitHub only lets it through once whatever branch protection exists (none
+# yet, all CCB members' approval later) is satisfied.
 on:
   issues:
     types: [labeled]
@@ -61,6 +64,14 @@ jobs:
               --body "Mechanically derived from issue #${{ github.event.issue.number }}. Review the decision file, then merge to accept it." \
               --head "$branch" --base main)
             echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+
+            # Queues the merge rather than merging it now: with no branch
+            # protection yet this merges as soon as checks pass (today, right
+            # away), but once CODEOWNERS + required reviews are switched on
+            # later, the exact same queued auto-merge will correctly wait for
+            # every required approval first. Nothing here needs to change
+            # when the gate is added.
+            gh pr merge "$pr_url" --auto --squash
           fi
 
       - name: Comment back on the issue
@@ -69,7 +80,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -s "${{ runner.temp }}/draft-decision.log" ]; then
-            echo "Mechanically derived from this issue's XML (no manual write-up). Review and merge to accept:" > "${{ runner.temp }}/comment.md"
+            echo "Mechanically derived from this issue's XML (no manual write-up). Auto-merge is queued - it merges as soon as the required reviews (if any are configured) are in:" > "${{ runner.temp }}/comment.md"
             echo "" >> "${{ runner.temp }}/comment.md"
             echo "${{ steps.pr.outputs.pr_url }}" >> "${{ runner.temp }}/comment.md"
             echo "" >> "${{ runner.temp }}/comment.md"

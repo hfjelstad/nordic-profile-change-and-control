@@ -1,15 +1,18 @@
 name: Publish decision
 
-# Two ways to press the "button":
-# 1. On the CCB issue itself: add the "publish" label. That's the click-only
-#    path, no Actions tab needed - the decision id is resolved from whichever
-#    accepted decision file links back to that issue number.
-# 2. Actions -> Publish decision -> Run workflow, entering a decision ID
+# Three ways this runs:
+# 1. Automatically: as soon as a decision file lands on main (i.e. its PR was
+#    merged - see accept-decision.yml), this fires on push and publishes that
+#    decision without anyone clicking anything else.
+# 2. On the CCB issue itself: add the "publish" label. Useful to (re)publish
+#    a decision that already existed before this was automated.
+# 3. Actions -> Publish decision -> Run workflow, entering a decision ID
 #    directly. Useful if a decision isn't linked to a single issue.
-# Nothing runs on push/merge automatically - publishing a decision to the
-# ontology repository is a deliberate CCB action, not a side effect of
-# editing a file.
 on:
+  push:
+    branches: [main]
+    paths:
+      - "decisions/*.yaml"
   workflow_dispatch:
     inputs:
       decision_id:
@@ -24,11 +27,13 @@ permissions:
 
 jobs:
   publish:
-    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'publish'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.label.name == 'publish'
     runs-on: ubuntu-latest
     steps:
       - name: Check out this repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,6 +48,14 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "decision_id=${{ inputs.decision_id }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            file=$(git diff --name-only "${{ github.event.before }}" "${{ github.event.after }}" -- 'decisions/*.yaml' | grep -v TEMPLATE | head -n1)
+            if [ -z "$file" ]; then
+              echo "No new/changed decision file in this push (probably a deletion or unrelated change)" >&2
+              exit 1
+            fi
+            id=$(basename "$file" | grep -oE '^[A-Za-z]+-[0-9]+')
+            echo "decision_id=$id" >> "$GITHUB_OUTPUT"
           else
             python .github/scripts/resolve_decision_from_issue.py "${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
           fi
