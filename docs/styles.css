@@ -58,8 +58,8 @@ h3 { font-size: 1.38rem; letter-spacing: -.04em; margin-bottom: 12px; }
 .loop-step small { color: var(--muted); font-family: var(--mono); font-size: .61rem; margin-top: auto; }
 .loop-step-current small { color: #b7dbd5; }
 .loop-arrow { align-self: center; color: var(--coral); font-size: 1.35rem; }
-.register-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
-.register-panel { background: var(--white); border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 270px; padding: 21px; }
+.register-grid { align-items: start; display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
+.register-panel { background: var(--white); border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 140px; padding: 21px; }
 .panel-heading { align-items: baseline; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; margin-bottom: 5px; padding-bottom: 13px; }
 .panel-heading h3 { font-size: 1.05rem; margin: 0; }
 .panel-count { color: var(--coral); font-family: var(--mono); font-size: .68rem; }
