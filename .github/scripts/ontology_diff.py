@@ -19,13 +19,16 @@ from standards import STANDARDS, detect_standard
 # Generic NeTEx/SIRI envelope attributes every versioned entity or Ref
 # element carries (id/version/ref/lifecycle bookkeeping), plus `lang`, which
 # is baked into the base MultilingualString type used by every free-text
-# element (Name, Description, ShortName, Text, ...). None of these are a
-# Nordic-specific choice, which is why the baseline never bothers documenting
-# them per class either (confirmed empirically: id/ref/version/order are the
-# only attributes the baseline documents at all, ~50-57 times each).
+# element (Name, Description, ShortName, Text, ...), and `schemaLocation`,
+# the standard xsi:schemaLocation hint on the PublicationDelivery/Siri root
+# element (XML Schema instance boilerplate, not part of either type system's
+# own content model). None of these are a Nordic-specific choice, which is
+# why the baseline never bothers documenting them per class either (confirmed
+# empirically: id/ref/version/order are the only attributes the baseline
+# documents at all, ~50-57 times each).
 GENERIC_ATTRIBUTES = {
     "id", "version", "ref", "created", "changed", "modification",
-    "order", "status", "lang",
+    "order", "status", "lang", "schemaLocation",
 }
 
 
@@ -383,11 +386,11 @@ def build_report(xml_text: str) -> str:
         lines.append("")
         lines.append(
             "Non-generic attributes used in the example (id/version/ref/order/created/"
-            "changed/modification/status/lang omitted as boilerplate baked into the base "
-            "NeTEx/SIRI type system rather than a Nordic profile choice). The baseline "
-            "rarely documents attributes beyond those, so this is informational rather "
-            "than a baseline comparison — an attribute here can be the actual substance of "
-            "a proposal (e.g. a type distinguishing repeated codes):"
+            "changed/modification/status/lang/schemaLocation omitted as boilerplate baked "
+            "into the base NeTEx/SIRI type system rather than a Nordic profile choice). The "
+            "baseline rarely documents attributes beyond those, so this is informational "
+            "rather than a baseline comparison — an attribute here can be the actual "
+            "substance of a proposal (e.g. a type distinguishing repeated codes):"
         )
         lines.append(", ".join(f"`{path}`" for path in attribute_paths))
 
