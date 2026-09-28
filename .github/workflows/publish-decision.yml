@@ -1,0 +1,95 @@
+name: Publish decision
+
+# The "button": go to Actions -> Publish decision -> Run workflow, and enter
+# the decision ID (e.g. NP-0001). Nothing runs on push/merge automatically -
+# publishing a decision to the ontology repository is a deliberate CCB action,
+# not a side effect of editing a file.
+on:
+  workflow_dispatch:
+    inputs:
+      decision_id:
+        description: "Decision ID to publish, e.g. NP-0001"
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Generate ttl block for the decision
+        id: decision
+        run: python .github/scripts/publish_decision_step.py "${{ inputs.decision_id }}" "${{ runner.temp }}/ttl-block.txt"
+
+      - name: Check whether a token for the ontology repository is configured
+        id: token_check
+        run: echo "has_token=${{ secrets.ONTOLOGY_REPO_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out entur/nordic-netex-ontology
+        if: steps.token_check.outputs.has_token == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: entur/nordic-netex-ontology
+          token: ${{ secrets.ONTOLOGY_REPO_TOKEN }}
+          path: ontology-repo
+
+      - name: Insert the ttl block into the baseline and open a PR
+        if: steps.token_check.outputs.has_token == 'true'
+        working-directory: ontology-repo
+        env:
+          GH_TOKEN: ${{ secrets.ONTOLOGY_REPO_TOKEN }}
+          DECISION_ID: ${{ steps.decision.outputs.decision_id }}
+          CLASS_NAME: ${{ steps.decision.outputs.class_name }}
+          DECISION_TITLE: ${{ steps.decision.outputs.title }}
+          CCB_ISSUE: ${{ steps.decision.outputs.issue }}
+        run: |
+          python "$GITHUB_WORKSPACE/.github/scripts/insert_ttl_block.py" \
+            netex-nordic-baseline.ttl "$CLASS_NAME" "${{ runner.temp }}/ttl-block.txt"
+
+          git config user.name "nordic-profile-ccb-bot"
+          git config user.email "actions@github.com"
+          branch="ccb/$DECISION_ID"
+          git checkout -b "$branch"
+          git add netex-nordic-baseline.ttl
+          git commit -m "Add $CLASS_NAME field from $DECISION_ID: $DECISION_TITLE"
+          git push origin "$branch" --force
+
+          body="Generated from $DECISION_ID in hfjelstad/nordic-profile-change-and-control."
+          if [ -n "$CCB_ISSUE" ]; then
+            body="$body
+
+          CCB discussion: https://github.com/hfjelstad/nordic-profile-change-and-control/issues/$CCB_ISSUE"
+          fi
+
+          gh pr create --repo entur/nordic-netex-ontology \
+            --title "$DECISION_ID: $DECISION_TITLE" \
+            --body "$body" \
+            --head "$branch" --base main
+
+      - name: No token configured, show what would have been published
+        if: steps.token_check.outputs.has_token != 'true'
+        run: |
+          echo "::warning::ONTOLOGY_REPO_TOKEN is not set, so no PR was opened. Add a repo secret with push access to entur/nordic-netex-ontology to enable that step. Generated ttl block:"
+          cat "${{ runner.temp }}/ttl-block.txt"
+
+      - name: Comment back on the CCB issue
+        if: steps.decision.outputs.issue != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment "${{ steps.decision.outputs.issue }}" \
+            --repo ${{ github.repository }} \
+            --body "Ran the *Publish decision* workflow for ${{ steps.decision.outputs.decision_id }}. See the workflow run for the resulting PR (or the generated ttl block, if no ontology token is configured yet): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
