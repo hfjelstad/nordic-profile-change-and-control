@@ -1,15 +1,22 @@
 name: Publish decision
 
-# The "button": go to Actions -> Publish decision -> Run workflow, and enter
-# the decision ID (e.g. NP-0001). Nothing runs on push/merge automatically -
-# publishing a decision to the ontology repository is a deliberate CCB action,
-# not a side effect of editing a file.
+# Two ways to press the "button":
+# 1. On the CCB issue itself: add the "publish" label. That's the click-only
+#    path, no Actions tab needed - the decision id is resolved from whichever
+#    accepted decision file links back to that issue number.
+# 2. Actions -> Publish decision -> Run workflow, entering a decision ID
+#    directly. Useful if a decision isn't linked to a single issue.
+# Nothing runs on push/merge automatically - publishing a decision to the
+# ontology repository is a deliberate CCB action, not a side effect of
+# editing a file.
 on:
   workflow_dispatch:
     inputs:
       decision_id:
         description: "Decision ID to publish, e.g. NP-0001"
         required: true
+  issues:
+    types: [labeled]
 
 permissions:
   contents: read
@@ -17,6 +24,7 @@ permissions:
 
 jobs:
   publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'publish'
     runs-on: ubuntu-latest
     steps:
       - name: Check out this repository
@@ -30,9 +38,18 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      - name: Resolve which decision to publish
+        id: resolve
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "decision_id=${{ inputs.decision_id }}" >> "$GITHUB_OUTPUT"
+          else
+            python .github/scripts/resolve_decision_from_issue.py "${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Generate ttl block for the decision
         id: decision
-        run: python .github/scripts/publish_decision_step.py "${{ inputs.decision_id }}" "${{ runner.temp }}/ttl-block.txt"
+        run: python .github/scripts/publish_decision_step.py "${{ steps.resolve.outputs.decision_id }}" "${{ runner.temp }}/ttl-block.txt"
 
       - name: Check whether a token for the ontology repository is configured
         id: token_check
