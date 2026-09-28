@@ -21,6 +21,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  actions: write
 
 jobs:
   accept:
@@ -72,7 +73,20 @@ jobs:
             # PR is immediately mergeable ("clean"), and GitHub's auto-merge
             # API refuses to queue a merge with nothing to wait for - in that
             # case just merge it directly instead.
-            gh pr merge "$pr_url" --auto --squash || gh pr merge "$pr_url" --squash
+            if gh pr merge "$pr_url" --auto --squash; then
+              echo "Auto-merge queued; publish-decision.yml's push trigger will pick it up once GitHub's own auto-merge actually lands it."
+            else
+              gh pr merge "$pr_url" --squash
+              # That merge was just performed by this workflow's own
+              # GITHUB_TOKEN, so - by GitHub's own design, to stop workflows
+              # recursively re-triggering themselves - it will NOT fire the
+              # push trigger on publish-decision.yml. workflow_dispatch is
+              # explicitly exempt from that restriction, so call it directly.
+              id=$(grep -oE '\(([A-Za-z]+-[0-9]+)\)' "${{ runner.temp }}/draft-decision.log" | tr -d '()' | head -n1)
+              if [ -n "$id" ]; then
+                gh workflow run "Publish decision" --repo ${{ github.repository }} -f decision_id="$id"
+              fi
+            fi
           fi
 
       - name: Comment back on the issue
