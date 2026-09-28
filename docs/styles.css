@@ -87,6 +87,10 @@ h3 { font-size: 1.38rem; letter-spacing: -.04em; margin-bottom: 12px; }
 .proposal-cta { color: var(--teal-dark); display: inline-block; font-family: var(--mono); font-size: .68rem; text-decoration: none; }
 .proposal-cta:hover { color: var(--coral); }
 .proposal-loading { color: var(--muted); font-size: .72rem; margin: 0 0 10px; }
+.proposal-actions { align-items: center; display: flex; gap: 16px; flex-wrap: wrap; }
+.proposal-accept { background: var(--ink); border: 0; color: var(--white); cursor: pointer; font-family: var(--mono); font-size: .66rem; padding: 6px 14px; }
+.proposal-accept:hover { background: var(--teal); }
+.proposal-accept-status { color: var(--muted); font-family: var(--mono); font-size: .68rem; margin: 8px 0 0; }
 select { background: transparent; border: 0; border-bottom: 1px solid var(--ink); color: var(--ink); font: inherit; padding: 3px 25px 3px 4px; }
 .area-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
 .area-card { background: var(--white); border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 275px; padding: 23px; }

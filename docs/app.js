@@ -3,6 +3,13 @@ const cards = [...document.querySelectorAll('.area-card')];
 const emptyState = document.querySelector('#empty-state');
 const repositoryApi = 'https://api.github.com/repos/hfjelstad/nordic-profile-change-and-control';
 
+// Left unset on purpose: the accept button below is visible but inert until
+// this points at a deployed tools/accept-proxy/worker.js AND decisions/**
+// requires PR approval (CODEOWNERS + branch protection). Wiring it up before
+// that gate exists would let a public visitor get a decision merged
+// immediately with no review.
+const ACCEPT_PROXY_URL = '';
+
 filter.addEventListener('change', () => {
   const selected = filter.value;
   let visible = 0;
@@ -82,12 +89,40 @@ const proposalItem = (marker, issue) => {
       detail.innerHTML = `
         ${description ? `<p class="proposal-description">${escapeHtml(description)}</p>` : ''}
         ${check ? `<pre class="proposal-check">${escapeHtml(check.body)}</pre>` : '<p class="proposal-loading">No automated check comment yet.</p>'}
-        <a class="proposal-cta" href="${issue.html_url}" target="_blank" rel="noreferrer">Open on GitHub, add the <code>accept</code> label to draft a decision <span aria-hidden="true">↗</span></a>`;
+        <div class="proposal-actions">
+          <a class="proposal-cta" href="${issue.html_url}" target="_blank" rel="noreferrer">Open on GitHub, add the <code>accept</code> label to draft a decision <span aria-hidden="true">↗</span></a>
+          <button type="button" class="proposal-accept" data-issue="${issue.number}">Accept <span aria-hidden="true">→</span></button>
+        </div>
+        <p class="proposal-accept-status" hidden></p>`;
+      detail.querySelector('.proposal-accept').addEventListener('click', () => onAcceptClick(detail, issue.number));
     } catch (error) {
       detail.innerHTML = '<p class="proposal-loading">Could not load proposal detail right now.</p>';
     }
   });
   return item;
+};
+
+// The button always exists so the site's shape doesn't change once this is
+// wired up for real - today it only ever shows a status message, it never
+// calls a network endpoint.
+const onAcceptClick = async (detail, issueNumber) => {
+  const status = detail.querySelector('.proposal-accept-status');
+  status.hidden = false;
+  if (!ACCEPT_PROXY_URL) {
+    status.textContent = 'Not enabled yet - use the accept label on the GitHub issue for now.';
+    return;
+  }
+  status.textContent = 'Requesting...';
+  try {
+    const response = await fetch(ACCEPT_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ issue: issueNumber })
+    });
+    status.textContent = response.ok ? 'Accepted - drafting a decision now.' : `Could not accept (${response.status}).`;
+  } catch (error) {
+    status.textContent = 'Could not reach the accept service.';
+  }
 };
 
 const showMessage = (element, message) => {
