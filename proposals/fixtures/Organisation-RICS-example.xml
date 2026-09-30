@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-04-17T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:OrganisationRICSExample" version="1">
+            <codespaces>
+                <Codespace id="nog">
+                    <Xmlns>NOG</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <!-- RICS: international rail operator/carrier codes assigned by UIC, one per organisation -->
+                <ResourceFrame id="NOG:ResourceFrame:OrganisationRegister" version="1">
+                    <organisations>
+                        <Authority id="NOG:Authority:Entur" version="1">
+                            <privateCodes>
+                                <PrivateCode type="RICS">1176</PrivateCode>
+                            </privateCodes>
+                            <Name>Entur</Name>
+                        </Authority>
+                        <Operator id="NOG:Operator:Vy" version="1">
+                            <privateCodes>
+                                <PrivateCode type="RICS">1182</PrivateCode>
+                            </privateCodes>
+                            <Name>Vy Tog AS</Name>
+                        </Operator>
+                        <GeneralOrganisation id="NOG:GeneralOrganisation:DB" version="1">
+                            <privateCodes>
+                                <PrivateCode type="RICS">1080</PrivateCode>
+                            </privateCodes>
+                            <Name>DB Fernverkehr AG</Name>
+                        </GeneralOrganisation>
+                    </organisations>
+                </ResourceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
