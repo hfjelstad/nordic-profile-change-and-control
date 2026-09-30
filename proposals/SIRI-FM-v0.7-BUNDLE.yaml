@@ -11,8 +11,8 @@ source:
   pages: 20
   suppliedAs: PDF
 tracking:
-  parentIssue: null
-  childIssues: []
+  parentIssue: 1
+  childIssues: [2, 3, 4, 5, 6, 7]
   note: GitHub issue numbers are tracking IDs. They are intentionally separate from stable decision IDs.
 handling:
   parentIssuePurpose: Coordinate review of the PDF-derived proposal set and shared questions.
@@ -23,32 +23,32 @@ proposals:
     title: FacilityMonitoringDelivery and FacilityCondition structure
     status: proposed
     decisionId: null
-    issue: null
+    issue: 2
   - key: FM-002
     title: Facility status and remedy semantics
     status: proposed
     decisionId: null
-    issue: null
+    issue: 3
   - key: FM-003
     title: MonitoredCounting and monitoring information
     status: proposed
     decisionId: null
-    issue: null
+    issue: 4
   - key: FM-004
     title: Accessibility, limitations and suitability
     status: proposed
     decisionId: null
-    issue: null
+    issue: 5
   - key: FM-005
     title: Facility registry, NeTEx references and feature vocabulary
     status: proposed
     decisionId: null
-    issue: null
+    issue: 6
   - key: FM-006
     title: SIRI-FM examples as validation fixtures
     status: proposed
     decisionId: null
-    issue: null
+    issue: 7
 openQuestions:
   - Confirm the authoritative European SIRI profile and version behind the Nordic SIRI-FM document.
   - Confirm whether v0.7 is a shared Nordic profile version or a national/organisation profile version.
