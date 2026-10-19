@@ -32,6 +32,19 @@ subject:
 
 The consumer needs the exact generated property URI or a stable QName. A human label such as `ParentSiteRef` is not sufficient.
 
+`subject.class` always names the CEN class (`netex:X`). The consumer never writes profile statements onto that class: a statement may only sit on a `netex:` class if it is true of NeTEx regardless of any profile. Instead, the decision is projected onto the Nordic-owned profile node for that class (`nordic:X a profile:ProfileClass ; profile:onClass netex:X`) in the membership allowlist in `netex-nordic.ttl`. For example, a new field becomes:
+
+```turtle
+[] a profile:ProfileMember ;
+    profile:memberOf nordic:StopPlace ;
+    profile:element "PrivateCode" ;
+    profile:path "StopPlace/privateCodes/PrivateCode" ;
+    profile:cardinality "0..n" ;
+    nordic:decision "NP-0001" .
+```
+
+Adding a class that has no `nordic:X` node yet is a scope decision in its own right and is not generated automatically.
+
 For cross-standard decisions, `subject` should also identify the request and delivery message, and the reference target used to resolve identifiers such as a SIRI `FacilityRef` against a NeTEx facility registry.
 
 Supported first-generation rule fields should include:
@@ -64,13 +77,14 @@ decision:
 
 Separate decision types are needed for rules that do not become a property shape, such as:
 
-- `element-order`
-- `frame-containment`
-- `specialization`
+- `element-order`: projected as `profile:elementOrder` (`profile:position`, `profile:element`) on the `nordic:X` node
+- `frame-containment`: projected as `nordic:contains` / `nordic:containedIn` between `nordic:X` nodes
 - `domain-chain`
 - `mapping`
 
 These must identify the exact source and target terms and should not be encoded only in `rationale`.
+
+Specialisation between classes (for example DatedServiceJourney and ServiceJourney) is not part of the Nordic layer; downstream profiles declare it on their own nodes.
 
 ## SIRI target
 

@@ -13,10 +13,10 @@ subject:
   request: null
   delivery: null
   referenceTarget: null
-  # Extends the template's subject shape with the two fields the generator
-  # needs to place this inside StopPlace's existing nordic:ProfileMember
-  # block list; CONSUMER-CONTRACT.md flags structural fields like this as
-  # still first-generation / evolving.
+  # Extends the template's subject shape with the path the generator needs
+  # for the new profile:ProfileMember on the Nordic profile node
+  # nordic:StopPlace (profile:onClass netex:StopPlace); CONSUMER-CONTRACT.md
+  # flags structural fields like this as still first-generation / evolving.
   path: StopPlace/privateCodes/PrivateCode
 decision:
   type: optional
