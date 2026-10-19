@@ -355,13 +355,21 @@ def candidate_subjects(xml_text: str):
 
     root = diff["root"]
     parent_map = build_parent_map(root)
-    known_names = set(diff["baseline_profiles"]) | diff["model_names"]
+    # Anchor only to names the shared profile itself knows: a Nordic decision
+    # cannot hang a field on a class that exists only in a downstream profile.
+    in_scope_profile = diff["config"]["in_scope_profile"]
+    known_names = {
+        name for name, profile in diff["baseline_profiles"].items() if profile == in_scope_profile
+    } | diff["model_names"]
+    # From the shared profile's point of view, a name that only a downstream
+    # profile declares is just as new as one nobody declares.
+    new_names = set(diff["unmatched"]) | {name for name, _ in diff["other_profile"]}
 
     candidates, unresolved = [], []
 
     for element in root.iter():
         name = local_name(element.tag)
-        if name in diff["unmatched"]:
+        if name in new_names:
             class_name, class_node = nearest_known_class(element, parent_map, known_names)
             if class_node is None:
                 unresolved.append(f"element `{name}` has no known ancestor class in this document")
@@ -470,7 +478,15 @@ def build_report(xml_text: str) -> str:
         lines.append("Declared in the ontology, but not in-scope (needs a decision either way):")
         lines.append(", ".join(f"`{name}` ({status})" for name, status in other_status))
 
-    if not (unmatched or attribute_paths or other_status):
+    if other_profile:
+        lines.append("")
+        lines.append(
+            f"Declared only under a different profile scope, not in the shared {config['ontology_label']} "
+            "profile (needs a decision before it can be accepted):"
+        )
+        lines.append(", ".join(f"`{name}` ({profile})" for name, profile in other_profile))
+
+    if not (unmatched or attribute_paths or other_status or other_profile):
         lines.append("")
         lines.append("Nothing new: every element name here is already accepted into the baseline.")
 
@@ -479,14 +495,6 @@ def build_report(xml_text: str) -> str:
         lines.append(f"<details><summary>{len(in_scope)} elements already accepted into the shared {config['ontology_label']} baseline (click to expand)</summary>")
         lines.append("")
         lines.append(", ".join(f"`{name}`" for name, _ in in_scope))
-        lines.append("")
-        lines.append("</details>")
-
-    if other_profile:
-        lines.append("")
-        lines.append(f"<details><summary>{len(other_profile)} elements declared under a different profile scope, not the shared baseline (click to expand)</summary>")
-        lines.append("")
-        lines.append(", ".join(f"`{name}` ({profile})" for name, profile in other_profile))
         lines.append("")
         lines.append("</details>")
 
