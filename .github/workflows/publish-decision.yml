@@ -87,13 +87,13 @@ jobs:
           CCB_ISSUE: ${{ steps.decision.outputs.issue }}
         run: |
           python "$GITHUB_WORKSPACE/.github/scripts/insert_ttl_block.py" \
-            netex-nordic-baseline.ttl "$CLASS_NAME" "${{ runner.temp }}/ttl-block.txt"
+            netex-nordic.ttl "$CLASS_NAME" "${{ runner.temp }}/ttl-block.txt"
 
           git config user.name "nordic-profile-ccb-bot"
           git config user.email "actions@github.com"
           branch="ccb/$DECISION_ID"
           git checkout -b "$branch"
-          git add netex-nordic-baseline.ttl
+          git add netex-nordic.ttl
           git commit -m "Add $CLASS_NAME field from $DECISION_ID: $DECISION_TITLE"
           git push origin "$branch" --force
 

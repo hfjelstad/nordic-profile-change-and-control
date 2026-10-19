@@ -1,13 +1,13 @@
 const sources = {
   netex: { label: 'NeTEx', url: 'https://raw.githubusercontent.com/entur/nordic-netex-ontology/main/netex-nordic.ttl' },
-  netexBaseline: { label: 'Nordic Profile baseline', url: 'https://raw.githubusercontent.com/entur/nordic-netex-ontology/main/netex-nordic-baseline.ttl' },
   netexModel: { label: 'NeTEx structural model', url: 'https://raw.githubusercontent.com/entur/nordic-netex-ontology/main/netex-nordic-model.ttl' },
+  netexEntur: { label: 'Entur profile', url: 'https://raw.githubusercontent.com/entur/entur-netex-ontology/main/netex-entur.ttl' },
   siri: { label: 'SIRI', url: 'https://raw.githubusercontent.com/entur/nordic-siri-ontology/main/siri-nordic.ttl' },
   siriBaseline: { label: 'SIRI baseline', url: 'https://raw.githubusercontent.com/entur/nordic-siri-ontology/main/siri-nordic-baseline.ttl' },
   netexDocumentation: { label: 'NeTEx documentation', url: 'https://raw.githubusercontent.com/entur/nordic-netex-documentation/main/ontology/netex-nordic-documentation.ttl' }
 };
 
-const state = { netex: { objects: [], rules: [], pending: [], national: [] }, netexBaseline: { objects: [], rules: [], pending: [] }, siri: { objects: [], rules: [], pending: [] }, filter: 'netex', query: '' };
+const state = { netex: { objects: [], rules: [], pending: [], national: [] }, siri: { objects: [], rules: [], pending: [] }, filter: 'netex', query: '' };
 const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
 const localName = (value) => value.split(/[#:]/).pop().replace(/[<>]/g, '');
 const profileStatusValue = (block) => {
@@ -28,41 +28,47 @@ const normalizeSiriStatus = (status) => {
   const value = String(status || '').trim().toLowerCase();
   return ['in-scope', 'extended', 'conditional', 'not-in-scope'].includes(value) ? value : 'in-scope';
 };
-const extractNordicBaseline = (text, documentation) => {
-  const objects = [];
+const extractProfileNodes = (text, documentation, source) => {
   const documentationData = documentationLinks(documentation);
-  const declaration = /netex:([A-Za-z][\w-]*)\s+nordic:inProfile\s+profile:([A-Za-z][\w-]*)\s*;([\s\S]*?)(?=\nnetex:[A-Za-z][\w-]*\s+nordic:inProfile|\n##|$)/g;
+  // Each profiled class is a profile-owned node (nordic:X or a downstream
+  // entur:X, a profile:ProfileClass ; profile:onClass netex:X ;
+  // profile:scope profile:S); its fields are profile:ProfileMember blocks
+  // pointing at that node via profile:memberOf. Nothing profile-specific is
+  // asserted on the netex: classes themselves.
+  const statementPattern = /^(\[\]|[A-Za-z][\w-]*:[A-Za-z][\w-]*)\s+a\s+profile:(ProfileClass|ProfileMember)\s*;([\s\S]*?)\s\.[ \t]*$/gm;
+  const nodes = new Map();
+  const members = [];
   let match;
-  while ((match = declaration.exec(text))) {
-    const name = match[1];
-    const scope = match[2];
-    objects.push({ name, subject: `netex:${name}`, scope, status: scope === 'NordicProfile' ? 'in-scope' : scope, documentation: documentationData.links.get(name), source: 'netex-nordic-baseline.ttl' });
+  while ((match = statementPattern.exec(text))) {
+    const [, subject, kind, body] = match;
+    if (kind === 'ProfileClass') {
+      const onClass = body.match(/profile:onClass\s+netex:([A-Za-z][\w-]*)/);
+      const scope = body.match(/profile:scope\s+profile:([A-Za-z][\w-]*)/);
+      if (onClass && scope) nodes.set(subject, { name: onClass[1], scope: scope[1] });
+      continue;
+    }
+    const owner = body.match(/profile:memberOf\s+([A-Za-z][\w-]*:[A-Za-z][\w-]*)/);
+    if (owner) members.push({ owner: owner[1], element: quoted(body, 'profile:element'), path: quoted(body, 'profile:path'), cardinality: quoted(body, 'profile:cardinality') || 'unspecified' });
   }
-  // Most of the baseline's actual content lives here: fields nested under a
-  // class's nordic:ProfileMember blocks, not the class declaration itself.
-  const fieldsByClass = new Map();
-  const fieldPattern = /nordic:onClass\s+netex:([A-Za-z][\w-]*)\s*;\s*nordic:element\s+"([^"]*)"\s*;\s*nordic:path\s+"([^"]*)"\s*;\s*nordic:cardinality\s+"([^"]*)"/g;
-  let fieldMatch;
-  while ((fieldMatch = fieldPattern.exec(text))) {
-    const [, className, element, path, cardinality] = fieldMatch;
-    if (!fieldsByClass.has(className)) fieldsByClass.set(className, []);
-    fieldsByClass.get(className).push({ element, path, cardinality: cardinality || 'unspecified' });
-  }
-  objects.forEach((object) => { object.fields = fieldsByClass.get(object.name) || []; });
-  const active = objects.filter((object) => object.scope === 'NordicProfile');
-  const pending = objects.filter((object) => object.scope === 'NordicCandidate').map((object) => ({ ...object, status: object.scope }));
-  // Some classes only ever show up as nordic:onClass field blocks, never
-  // with a top-level nordic:inProfile declaration at all - the baseline's
-  // own header explains this is deliberate: "Nordic-owned classes are
-  // assigned to profile:NordicProfile; downstream profiles may assign other
-  // classes to their own profile while reusing these field definitions."
-  // That is exactly "implemented somewhere, not part of the shared profile",
-  // read straight from the source rather than a hardcoded name list.
-  const declaredNames = new Set(objects.map((object) => object.name));
-  const national = [...fieldsByClass.keys()]
-    .filter((name) => !declaredNames.has(name))
-    .map((name) => ({ name, subject: `netex:${name}`, status: 'national', fields: fieldsByClass.get(name), documentation: documentationData.links.get(name), source: 'netex-nordic-baseline.ttl' }));
-  return { objects: active, rules: [], pending, national };
+  const fieldsByNode = new Map();
+  members.forEach(({ owner, ...field }) => {
+    if (!fieldsByNode.has(owner)) fieldsByNode.set(owner, []);
+    fieldsByNode.get(owner).push(field);
+  });
+  return [...nodes.entries()].map(([node, { name, scope }]) => ({
+    name,
+    subject: `netex:${name}`,
+    node,
+    scope,
+    status: scope === 'NP' ? 'in-scope' : scope,
+    fields: fieldsByNode.get(node) || [],
+    documentation: documentationData.links.get(name),
+    source
+  }));
+};
+const extractNordicBaseline = (text, documentation) => {
+  const objects = extractProfileNodes(text, documentation, 'netex-nordic.ttl');
+  return { objects: objects.filter((object) => object.scope === 'NP'), rules: [], pending: objects.filter((object) => object.scope !== 'NP') };
 };
 const documentationLinks = (text) => {
   const links = new Map();
@@ -83,28 +89,24 @@ const documentationLinks = (text) => {
   return { links, scopes };
 };
 
-const extractNetexModel = (text) => {
-  // Curated frame containment/childOf overlay (a separate file from the
-  // baseline/SHACL layers): covers envelope elements like
-  // PublicationDelivery/ParticipantRef that are never a CCB decision
-  // themselves but are still real, documented NeTEx structure.
+const extractContainment = (text) => {
+  // Curated frame containment between profile nodes (netex-nordic-model.ttl,
+  // and the same nordic:contains/containedIn predicates on a downstream
+  // profile's own nodes), keyed by node QName such as nordic:SiteFrame.
   const entries = new Map();
-  const ensure = (name) => {
-    if (!entries.has(name)) entries.set(name, { name, contains: [], childOf: null });
-    return entries.get(name);
+  const ensure = (node) => {
+    if (!entries.has(node)) entries.set(node, { contains: [], containedIn: null });
+    return entries.get(node);
   };
-  const statementPattern = /netex:([A-Za-z][\w-]*)\s+((?:nordic:\w+\s+[^;.]+;?\s*)+)\./g;
+  const statementPattern = /^([A-Za-z][\w-]*:[A-Z][\w-]*)\s+((?:nordic:(?:contains|containedIn)\s+[^;.]+;?\s*)+)\./gm;
   let match;
   while ((match = statementPattern.exec(text))) {
     const subject = match[1];
     const body = match[2];
     const containsMatch = body.match(/nordic:contains\s+([^;]+)/);
-    if (containsMatch) {
-      const names = [...containsMatch[1].matchAll(/netex:([A-Za-z][\w-]*)/g)].map((m) => m[1]);
-      ensure(subject).contains.push(...names);
-    }
-    const childOfMatch = body.match(/nordic:childOf\s+netex:([A-Za-z][\w-]*)/);
-    if (childOfMatch) ensure(subject).childOf = childOfMatch[1];
+    if (containsMatch) ensure(subject).contains.push(...[...containsMatch[1].matchAll(/([A-Za-z][\w-]*:[A-Z][\w-]*)/g)].map((m) => m[1]));
+    const containedInMatch = body.match(/nordic:containedIn\s+([A-Za-z][\w-]*:[A-Z][\w-]*)/);
+    if (containedInMatch) ensure(subject).containedIn = containedInMatch[1];
   }
   return entries;
 };
@@ -124,7 +126,7 @@ const extractNetex = (text, documentation) => {
     const name = localName(target[1]);
     const pathMatches = [...block.matchAll(/sh:path\s+([^;\s]+)/g)];
     const paths = pathMatches.map((match) => localName(match[1]));
-    objects.push({ name, subject: target[1], scope: 'NordicProfile', documentation: docs.get(name), source: 'netex-nordic.ttl' });
+    objects.push({ name, subject: target[1], scope: 'NP', documentation: docs.get(name), source: 'netex-nordic.ttl' });
     pathMatches.forEach((pathMatch, index) => {
       const path = localName(pathMatch[1]);
       const nextPath = pathMatches[index + 1];
@@ -220,6 +222,13 @@ const extractSiri = (text, baseline = '') => {
   return { objects: objects.filter((entry) => entry.status === 'in-scope'), rules, pending: pending.filter((entry) => ['extended', 'conditional', 'not-in-scope'].includes(entry.status)) };
 };
 
+const structureHtml = (object) => {
+  const parts = [];
+  if (object.containedIn) parts.push(`<span>Contained in <code>${escapeHtml(object.containedIn)}</code></span>`);
+  if (object.contains && object.contains.length) parts.push(`<span>Contains ${object.contains.map((name) => `<code>${escapeHtml(name)}</code>`).join(', ')}</span>`);
+  return parts.length ? `<div class="object-structure"><strong>Containment</strong>${parts.join('')}</div>` : '';
+};
+
 const render = () => {
   const format = state.filter;
   const data = state[format];
@@ -238,15 +247,15 @@ const render = () => {
   const pendingPanel = document.querySelector('#pending-panel');
   pendingPanel.hidden = !pending.length;
   document.querySelector('#pending-title').textContent = format === 'siri' ? 'Outside Nordic scope' : 'Under consideration';
-  document.querySelector('#pending-note').textContent = format === 'siri' ? 'Present in the SIRI source, but marked extended, conditional or not-in-scope.' : 'This is the CCB view of items classified as NordicCandidate in the baseline.';
+  document.querySelector('#pending-note').textContent = format === 'siri' ? 'Present in the SIRI source, but marked extended, conditional or not-in-scope.' : 'This is the CCB view of baseline classes with a scope other than the shared Nordic Profile (NP).';
   document.querySelector('#pending-list').innerHTML = pending.map((entry) => `<article class="pending-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(entry.name)}</h3><span>${escapeHtml(entry.status)}</span></div><p>${escapeHtml(entry.description)} Requires CCB treatment before inclusion.</p><code>${escapeHtml(entry.subject)}</code><small>Candidate for a new decision</small></div></article>`).join('');
   const nationalPanel = document.querySelector('#national-panel');
   if (nationalPanel) {
     nationalPanel.hidden = format === 'siri' || !national.length;
     document.querySelector('#national-list').innerHTML = national.map((entry) => {
       const fields = entry.fields || [];
-      const fieldsSummary = fields.length ? `<div class="object-fields"><strong>Fields documented (${fields.length})</strong>${fields.slice(0, 8).map((field) => `<span><code>${escapeHtml(field.path)}</code> ${escapeHtml(field.cardinality)}</span>`).join('')}</div>` : '';
-      return `<article class="pending-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(entry.name)}</h3><span>national</span></div><p>Documented with reusable field definitions, but not assigned to the shared Nordic profile.</p>${fieldsSummary}<code>${escapeHtml(entry.subject)}</code></div></article>`;
+      const fieldsSummary = fields.length ? `<div class="object-fields"><strong>Profile fields (${fields.length})</strong>${fields.slice(0, 8).map((field) => `<span><code>${escapeHtml(field.path)}</code> ${escapeHtml(field.cardinality)}</span>`).join('')}</div>` : '';
+      return `<article class="pending-entry"><div class="entry-marker">${format.toUpperCase()}</div><div class="entry-body"><div class="entry-heading"><h3>${escapeHtml(entry.name)}</h3><span>${escapeHtml(entry.scope)}</span></div><p>Defined in the ${escapeHtml(entry.scope)} profile (${escapeHtml(entry.source)}), not part of the shared Nordic profile.</p>${fieldsSummary}${structureHtml(entry)}<code>${escapeHtml(entry.node)}</code></div></article>`;
     }).join('');
   }
   if (!objects.length && !rules.length) {
@@ -262,10 +271,7 @@ const render = () => {
     const shownFields = fields.slice(0, 8);
     const moreFields = fields.length > shownFields.length ? `<span class="more">+${fields.length - shownFields.length} more</span>` : '';
     const fieldsSummary = fields.length ? `<div class="object-fields"><strong>Profile fields (${fields.length})</strong>${shownFields.map((field) => `<span><code>${escapeHtml(field.path)}</code> ${escapeHtml(field.cardinality)}</span>`).join('')}${moreFields}</div>` : '';
-    const structureParts = [];
-    if (object.childOf) structureParts.push(`<span>Child of <code>${escapeHtml(object.childOf)}</code></span>`);
-    if (object.contains && object.contains.length) structureParts.push(`<span>Contains ${object.contains.map((name) => `<code>${escapeHtml(name)}</code>`).join(', ')}</span>`);
-    const structureSummary = structureParts.length ? `<div class="object-structure"><strong>Containment</strong>${structureParts.join('')}</div>` : '';
+    const structureSummary = structureHtml(object);
     const documentationLinksHtml = object.documentation && typeof object.documentation === 'object'
       ? Object.entries(object.documentation).filter(([, url]) => url).map(([key, url]) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(key)}</a>`).join('')
       : (object.documentation ? `<a href="${escapeHtml(object.documentation)}" target="_blank" rel="noopener">source</a>` : '');
@@ -278,41 +284,51 @@ const render = () => {
 const load = async () => {
   try {
     const fetchText = (url) => fetch(url).then((response) => { if (!response.ok) throw new Error(response.status); return response.text(); });
-    const [netex, siri, siriBaseline, documentation, baseline, model] = await Promise.all([
+    const [netex, siri, siriBaseline, documentation, model, entur] = await Promise.all([
       fetchText(sources.netex.url),
       fetchText(sources.siri.url),
       fetchText(sources.siriBaseline.url),
       fetchText(sources.netexDocumentation.url),
-      fetchText(sources.netexBaseline.url),
-      fetchText(sources.netexModel.url)
+      fetchText(sources.netexModel.url),
+      // Downstream profile is supplementary; the Nordic view must still load without it.
+      fetchText(sources.netexEntur.url).catch(() => '')
     ]);
     const overlay = extractNetex(netex, documentation);
-    const baselineData = extractNordicBaseline(baseline, documentation);
+    const baselineData = extractNordicBaseline(netex, documentation);
+    const downstream = extractProfileNodes(entur, documentation, 'netex-entur.ttl').filter((object) => object.scope !== 'NP');
     const objects = new Map(baselineData.objects.map((object) => [object.name, object]));
-    // SHACL shapes always assume NordicProfile scope and know nothing about
-    // the baseline; if the baseline has since marked a name NordicCandidate,
-    // don't let a stale shape resurrect it as an accepted Object card.
+    // SHACL shapes always assume NP scope and know nothing about the
+    // baseline; if the baseline gives a name a different scope, don't let a
+    // stale shape resurrect it as an accepted Object card.
     const pendingNames = new Set([...baselineData.pending, ...overlay.pending].map((item) => item.name));
     overlay.objects.forEach((object) => {
       if (pendingNames.has(object.name)) return;
       objects.set(object.name, { ...objects.get(object.name), ...object });
     });
-    // Envelope/frame elements (PublicationDelivery, ParticipantRef, ...) are
-    // never baseline/SHACL content, only documented here as containment; add
-    // them as their own cards, without touching objects already known above.
-    extractNetexModel(model).forEach((entry, name) => {
-      if (objects.has(name)) return;
-      if (!entry.contains.length && !entry.childOf) return;
-      objects.set(name, { name, subject: `netex:${name}`, kind: 'structure', contains: entry.contains, childOf: entry.childOf, source: 'netex-nordic-model.ttl' });
+    // Containment links profile nodes (nordic:X, entur:X); show them by the
+    // NeTEx class each node profiles.
+    const nodeNames = new Map([...baselineData.objects, ...baselineData.pending, ...downstream].map((object) => [object.node, object.name]));
+    const nodeName = (node) => nodeNames.get(node) || localName(node);
+    const containment = new Map([...extractContainment(model), ...extractContainment(entur)]);
+    const withContainment = (object) => {
+      const entry = containment.get(object.node);
+      return entry ? { ...object, contains: entry.contains.map(nodeName), containedIn: entry.containedIn ? nodeName(entry.containedIn) : null } : object;
+    };
+    objects.forEach((object, name) => objects.set(name, withContainment(object)));
+    const profiledNodes = new Set(nodeNames.keys());
+    containment.forEach((entry, node) => {
+      const name = nodeName(node);
+      if (profiledNodes.has(node) || objects.has(name)) return;
+      objects.set(name, { name, subject: node, node, kind: 'structure', contains: entry.contains.map(nodeName), containedIn: entry.containedIn ? nodeName(entry.containedIn) : null, source: 'netex-nordic-model.ttl' });
     });
     state.netex = {
       objects: [...objects.values()],
       rules: overlay.rules,
       pending: [...new Map([...baselineData.pending, ...overlay.pending].map((item) => [item.name, item])).values()],
-      national: baselineData.national
+      national: downstream.map(withContainment)
     };
     state.siri = extractSiri(siri, siriBaseline);
-    document.querySelector('#profile-source-count').textContent = 'NeTEx, SIRI, SIRI baseline and documentation read';
+    document.querySelector('#profile-source-count').textContent = `NeTEx, SIRI, SIRI baseline${entur ? ', Entur profile' : ''} and documentation read`;
     document.querySelector('#profile-updated').textContent = new Date().toLocaleDateString('en-GB');
     render();
   } catch (error) {

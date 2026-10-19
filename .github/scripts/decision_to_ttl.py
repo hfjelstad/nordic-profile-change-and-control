@@ -1,6 +1,12 @@
-"""Turn accepted CCB decisions into the exact nordic:ProfileMember ttl block
+"""Turn accepted CCB decisions into the exact profile:ProfileMember ttl block
 that a downstream ontology repository (e.g. entur/nordic-netex-ontology)
-needs to add to its baseline file.
+needs to add to its membership allowlist (netex-nordic.ttl).
+
+The block hangs on the Nordic-owned profile node (nordic:X, a
+profile:ProfileClass pointing at netex:X via profile:onClass), never on the
+CEN class itself: a statement may only sit on a netex: class if it is true of
+NeTEx regardless of any profile. The decision's subject.class still names the
+CEN class (netex:X); the Nordic node is derived from it.
 
 This is the first concrete implementation of the "generation" step described
 in docs/CLOSED-FEEDBACK-LOOP.md and docs/CONSUMER-CONTRACT.md: a decision
@@ -11,7 +17,7 @@ Scope: only handles the by far most common decision shape in the current
 baseline, a property addition on a class (decision.type in {required,
 optional}) with a plain structural path. Other decision types
 (excluded/conditional/national/informative, or non-property rules like
-element-order/specialization/domain-chain) are out of scope for this first
+element-order/frame-containment/domain-chain) are out of scope for this first
 version and are reported as skipped rather than guessed at.
 """
 import argparse
@@ -49,12 +55,12 @@ def profile_member_ttl(decision: dict) -> str:
     path = subject.get("path") or property_name
     cardinality = cardinality_for(decision["decision"]["rule"])
     return (
-        "[] a nordic:ProfileMember ;\n"
-        f"    nordic:onClass netex:{class_name} ;\n"
-        f'    nordic:element "{property_name}" ;\n'
-        f'    nordic:path "{path}" ;\n'
-        f'    nordic:cardinality "{cardinality}" ;\n'
-        f'    nordic:provenance nordic:decision "{decision["id"]}" .'
+        "[] a profile:ProfileMember ;\n"
+        f"    profile:memberOf nordic:{class_name} ;\n"
+        f'    profile:element "{property_name}" ;\n'
+        f'    profile:path "{path}" ;\n'
+        f'    profile:cardinality "{cardinality}" ;\n'
+        f'    nordic:decision "{decision["id"]}" .'
     )
 
 

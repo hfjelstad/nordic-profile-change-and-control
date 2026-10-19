@@ -6,9 +6,13 @@ names are already accepted, which are declared but out of scope, and which
 are not found at all. It does NOT decide whether an unmatched element should
 be accepted; that remains a CCB decision.
 
-Both NeTEx and SIRI baselines use the same nordic:inProfile profile:X
-convention, just under a different namespace prefix, so this is a single
-generalised implementation driven by standards.STANDARDS.
+The NeTEx profile (netex-nordic.ttl) uses Nordic-owned profile nodes
+(nordic:X a profile:ProfileClass ; profile:onClass netex:X ; profile:scope
+profile:NP, with fields as profile:ProfileMember / profile:memberOf nordic:X);
+downstream profiles such as Entur's use the same vocabulary with their own
+nodes. The SIRI baseline still uses the older siri:X nordic:inProfile
+profile:X convention with nordic:onClass field blocks. Which parser is used
+is selected per standard by standards.STANDARDS[...]["baseline_format"].
 """
 import re
 import urllib.request
@@ -47,10 +51,9 @@ def local_element_names(root) -> set:
 
 
 def baseline_profile_map(baseline_text: str, prefix: str, in_scope_profile: str) -> dict:
-    """Maps a local element/class name to the profile scope it is declared
-    under, e.g. "NordicProfile"/"NordicSIRI" or "EnturExtension". Prefers the
-    in-scope profile if a name is declared more than once under different
-    scopes."""
+    """Legacy format (SIRI): maps a local element/class name to the profile
+    scope it is declared under, e.g. "NordicSIRI". Prefers the in-scope
+    profile if a name is declared more than once under different scopes."""
     mapping = {}
     pattern = re.compile(rf"{prefix}:([A-Za-z][\w-]*)\s+nordic:inProfile\s+profile:([A-Za-z][\w-]*)")
     for match in pattern.finditer(baseline_text):
@@ -74,8 +77,8 @@ def _field_element_names(raw_element_value: str):
 
 
 def field_profile_map(baseline_text: str, prefix: str, in_scope_profile: str, class_profiles: dict) -> dict:
-    """Maps element names that only appear nested inside a class's
-    nordic:ProfileMember block (e.g. "AccessibilityAssessment" as a field of
+    """Legacy format (SIRI): maps element names that only appear nested
+    inside a class's nordic:ProfileMember block (e.g. "AccessibilityAssessment" as a field of
     Quay) to that owning class's profile scope. Most of the baseline's
     content lives at this nested level, not as its own top-level class
     declaration, so this is needed in addition to baseline_profile_map."""
@@ -94,14 +97,86 @@ def field_profile_map(baseline_text: str, prefix: str, in_scope_profile: str, cl
     return mapping
 
 
+# One "subject a profile:ProfileClass|ProfileMember ; ... ." statement; a
+# statement ends with " ." at the end of a line (literals like "0..1" never do).
+_PROFILE_STATEMENT = re.compile(
+    r"^(\[\]|[A-Za-z][\w-]*:[A-Za-z][\w-]*)\s+a\s+profile:(ProfileClass|ProfileMember)\s*;([\s\S]*?)\s\.[ \t]*\r?$",
+    re.MULTILINE,
+)
+
+
+def profile_node_maps(baseline_text: str, prefix: str, in_scope_profile: str):
+    """Profile-node format (NeTEx): returns (class_profiles, field_profiles),
+    the same two maps baseline_profile_map/field_profile_map produce for the
+    legacy format. Classes are read from profile-owned nodes
+    (nordic:X profile:onClass netex:X ; profile:scope profile:S), fields from
+    profile:ProfileMember blocks via profile:memberOf, each field taking the
+    scope of the node it belongs to."""
+    node_class, node_scope, class_profiles, members = {}, {}, {}, []
+    for match in _PROFILE_STATEMENT.finditer(baseline_text):
+        subject, kind, body = match.groups()
+        if kind == "ProfileClass":
+            on_class = re.search(rf"profile:onClass\s+{prefix}:([A-Za-z][\w-]*)", body)
+            scope = re.search(r"profile:scope\s+profile:([A-Za-z][\w-]*)", body)
+            if not (on_class and scope):
+                continue
+            name, profile = on_class.group(1), scope.group(1)
+            node_class[subject], node_scope[subject] = name, profile
+            if name not in class_profiles or profile == in_scope_profile:
+                class_profiles[name] = profile
+        else:
+            owner = re.search(r"profile:memberOf\s+([A-Za-z][\w-]*:[A-Za-z][\w-]*)", body)
+            element = re.search(r'profile:element\s+"([^"]*)"', body)
+            if owner and element:
+                members.append((owner.group(1), element.group(1)))
+
+    field_profiles = {}
+    for owner, raw_element in members:
+        profile = node_scope.get(owner)
+        if profile is None:
+            continue
+        for name in _field_element_names(raw_element):
+            if name not in field_profiles or profile == in_scope_profile:
+                field_profiles[name] = profile
+    return class_profiles, field_profiles
+
+
+def baseline_profile_maps(baseline_text: str, config: dict):
+    """(class_profiles, field_profiles) for a standard, using the parser
+    matching its baseline_format."""
+    prefix, in_scope_profile = config["ontology_prefix"], config["in_scope_profile"]
+    if config.get("baseline_format") == "profile-nodes":
+        return profile_node_maps(baseline_text, prefix, in_scope_profile)
+    class_profiles = baseline_profile_map(baseline_text, prefix, in_scope_profile)
+    return class_profiles, field_profile_map(baseline_text, prefix, in_scope_profile, class_profiles)
+
+
+def downstream_profile_maps(config: dict) -> dict:
+    """Class and field names declared only by downstream profiles (e.g.
+    Entur), mapped to their scope. Best effort: an unreachable downstream
+    source is skipped rather than failing the whole comparison."""
+    mapping = {}
+    for url in config.get("downstream_urls", []):
+        try:
+            text = fetch(url)
+        except Exception:
+            continue
+        class_profiles, field_profiles = profile_node_maps(text, config["ontology_prefix"], config["in_scope_profile"])
+        for name, profile in {**field_profiles, **class_profiles}.items():
+            mapping.setdefault(name, profile)
+    return mapping
+
+
 def model_known_names(model_text: str, prefix: str) -> set:
     """Names documented anywhere in the curated Nordic structural model file
-    (frame containment via nordic:contains/containedIn/childOf, and leaf
-    property names via nordic:hasElement/nordic:property blocks for SIRI).
-    This is a separate curated overlay, distinct from the baseline/profile
-    files, so a name only appearing here is still "known", just not a
-    baseline decision."""
-    names = {match.group(1) for match in re.finditer(rf"{prefix}:([A-Za-z][\w-]*)", model_text)}
+    (frame containment via nordic:contains/containedIn between profile nodes,
+    and leaf property names via nordic:hasElement/nordic:property blocks for
+    SIRI). This is a separate curated overlay, distinct from the
+    baseline/profile files, so a name only appearing here is still "known",
+    just not a baseline decision. Only PascalCase names count: with the
+    nordic: prefix, lowerCamelCase names are vocabulary predicates
+    (contains, containedIn), not classes."""
+    names = {match.group(1) for match in re.finditer(rf"{prefix}:([A-Z][\w-]*)", model_text)}
     names.update(match.group(1) for match in re.finditer(r'nordic:property\s+"([^"]+)"', model_text))
     return names
 
@@ -242,15 +317,11 @@ def compute_diff(xml_text: str) -> dict:
     names = local_element_names(root)
     wrapper_names = structural_wrapper_names(root)
     baseline_text = fetch(config["baseline_url"])
-    class_profiles = baseline_profile_map(
-        baseline_text, config["ontology_prefix"], config["in_scope_profile"]
-    )
-    baseline_profiles = {
-        **field_profile_map(baseline_text, config["ontology_prefix"], config["in_scope_profile"], class_profiles),
-        **class_profiles,
-    }
+    class_profiles, field_profiles = baseline_profile_maps(baseline_text, config)
+    baseline_profiles = {**downstream_profile_maps(config), **field_profiles, **class_profiles}
     status_map = profile_status_map(fetch(config["profile_url"]), config["ontology_prefix"])
-    model_names = model_known_names(fetch(config["model_url"]), config["ontology_prefix"]) if config.get("model_url") else set()
+    model_prefix = config.get("model_prefix", config["ontology_prefix"])
+    model_names = model_known_names(fetch(config["model_url"]), model_prefix) if config.get("model_url") else set()
 
     content_names = names - wrapper_names
     attribute_paths = sorted(xml_attribute_paths(root))
