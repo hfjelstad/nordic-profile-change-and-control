@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-02T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:N203" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <ServiceCalendarFrame id="ENT:ServiceCalendarFrame:Example" version="1">
+                  <operatingDays>
+                    <!-- The operating day is defined once, with an id and a date. -->
+                    <OperatingDay id="ENT:OperatingDay:2026-12-14" version="1">
+                      <CalendarDate>2026-12-14</CalendarDate>
+                    </OperatingDay>
+                  </operatingDays>
+                </ServiceCalendarFrame>
+                <TimetableFrame id="ENT:TimetableFrame:Example" version="1">
+                  <vehicleJourneys>
+                    <ServiceJourney id="ENT:ServiceJourney:R10-1001" version="1">
+                      <Name>Oslo S - Lillehammer</Name>
+                    </ServiceJourney>
+                      <!-- Every dated journey on that day refers to it. OperatingDayView (no id) and UicOperatingPeriod are not used. -->
+                      <DatedServiceJourney id="ENT:DatedServiceJourney:R10-1001-2026-12-14" version="1">
+                        <ServiceJourneyRef ref="ENT:ServiceJourney:R10-1001" version="1"/>
+                        <OperatingDayRef ref="ENT:OperatingDay:2026-12-14"/>
+                      </DatedServiceJourney>
+                  </vehicleJourneys>
+                </TimetableFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
