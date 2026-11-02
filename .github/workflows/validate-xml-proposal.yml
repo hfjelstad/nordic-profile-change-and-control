@@ -63,7 +63,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           GH_REPO: ${{ github.repository }}
-        run: gh issue comment "$ISSUE_NUMBER" --body-file .github/scripts/validation-result.md
+        run: |
+          # Keep only the latest check: remove earlier XML check comments from the bot.
+          gh api --paginate "repos/$GH_REPO/issues/$ISSUE_NUMBER/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("## Automated XML check"))) | .id' \
+            | while read -r id; do gh api -X DELETE "repos/$GH_REPO/issues/comments/$id"; done
+          gh issue comment "$ISSUE_NUMBER" --body-file .github/scripts/validation-result.md
 
       - name: Fail the job if the check failed
         if: steps.validate.outcome == 'failure'
