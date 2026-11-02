@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-02T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:N217" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <ServiceFrame id="ENT:ServiceFrame:Lines" version="1">
+                  <lines>
+                    <!-- A school bus line: only for pupils, not open to the general public. -->
+                    <Line id="ENT:Line:S1" version="1">
+                      <Name>Skolerute S1</Name>
+                      <TransportMode>bus</TransportMode>
+                      <LineType>local</LineType>
+                      <RestrictedLine>true</RestrictedLine>
+                      <UserTypes>schoolPupil</UserTypes>
+                    </Line>
+                  </lines>
+                </ServiceFrame>
+                <ServiceFrame id="ENT:ServiceFrame:Patterns" version="1">
+                  <journeyPatterns>
+                    <ServiceJourneyPattern id="ENT:ServiceJourneyPattern:S1" version="1">
+                      <pointsInSequence>
+                        <!-- At this stop you wave to board and press the stop button to get off. -->
+                        <StopPointInJourneyPattern id="ENT:StopPointInJourneyPattern:S1-1" version="1" order="1">
+                          <ScheduledStopPointRef ref="ENT:ScheduledStopPoint:S1-1"/>
+                          <BoardingRequestMethod>handSignal</BoardingRequestMethod>
+                          <AlightingRequestMethod>stopButton</AlightingRequestMethod>
+                        </StopPointInJourneyPattern>
+                        <StopPointInJourneyPattern id="ENT:StopPointInJourneyPattern:S1-2" version="1" order="2">
+                          <ScheduledStopPointRef ref="ENT:ScheduledStopPoint:S1-2"/>
+                        </StopPointInJourneyPattern>
+                      </pointsInSequence>
+                    </ServiceJourneyPattern>
+                  </journeyPatterns>
+                </ServiceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
