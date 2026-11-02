@@ -10,6 +10,13 @@ body:
         This is the low-friction entry point: an XML example plus a description. The CCB will translate this into the exact profile rule and, if accepted, into a decision file. You do not need to know QNames, cardinalities or SHACL.
 
         You must attach the XML file below; that is the only thing the automated check reads and validates.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What should this example mean, and why should it be common Nordic practice? Say whether this is a new rule or a change to something already decided.
+    validations:
+      required: true
   - type: upload
     id: xml-file
     attributes:
@@ -26,13 +33,6 @@ body:
       render: xml
     validations:
       required: false
-  - type: textarea
-    id: description
-    attributes:
-      label: Description
-      description: What should this example mean, and why should it be common Nordic practice? Say whether this is a new rule or a change to something already decided.
-    validations:
-      required: true
   - type: input
     id: existing-decision-id
     attributes:
