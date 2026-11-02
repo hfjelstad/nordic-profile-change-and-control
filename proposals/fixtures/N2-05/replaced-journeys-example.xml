@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-02T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:N205" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <ServiceCalendarFrame id="ENT:ServiceCalendarFrame:Example" version="1">
+                  <operatingDays>
+                    <OperatingDay id="ENT:OperatingDay:2026-12-13" version="1">
+                      <CalendarDate>2026-12-13</CalendarDate>
+                    </OperatingDay>
+                    <OperatingDay id="ENT:OperatingDay:2026-12-14" version="1">
+                      <CalendarDate>2026-12-14</CalendarDate>
+                    </OperatingDay>
+                  </operatingDays>
+                </ServiceCalendarFrame>
+                <TimetableFrame id="ENT:TimetableFrame:Example" version="1">
+                  <vehicleJourneys>
+                    <ServiceJourney id="ENT:ServiceJourney:F6-405" version="1">
+                      <Name>Night train Oslo S - Trondheim S, departs 23:05</Name>
+                    </ServiceJourney>
+                    <ServiceJourney id="ENT:ServiceJourney:F6-405-Bus" version="1">
+                      <Name>Rail replacement bus Hamar - Trondheim S, departs 01:10</Name>
+                    </ServiceJourney>
+                      <!-- The night train belongs to the operating day 13 December, and is replaced after midnight. -->
+                      <DatedServiceJourney id="ENT:DatedServiceJourney:F6-405-2026-12-13" version="1">
+                        <ServiceAlteration>replaced</ServiceAlteration>
+                        <ServiceJourneyRef ref="ENT:ServiceJourney:F6-405" version="1"/>
+                        <OperatingDayRef ref="ENT:OperatingDay:2026-12-13"/>
+                      </DatedServiceJourney>
+                      <!-- The bus belongs to the operating day 14 December, but replaces the train from the day before. -->
+                      <DatedServiceJourney id="ENT:DatedServiceJourney:F6-405-Bus-2026-12-14" version="1">
+                        <ServiceJourneyRef ref="ENT:ServiceJourney:F6-405-Bus" version="1"/>
+                        <replacedJourneys>
+                          <DatedVehicleJourneyRef ref="ENT:DatedServiceJourney:F6-405-2026-12-13" version="1"/>
+                        </replacedJourneys>
+                        <OperatingDayRef ref="ENT:OperatingDay:2026-12-14"/>
+                      </DatedServiceJourney>
+                  </vehicleJourneys>
+                </TimetableFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
