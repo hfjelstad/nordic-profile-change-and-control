@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-02T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:N218" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <SiteFrame id="ENT:SiteFrame:Example" version="1">
+                  <stopPlaces>
+                    <!-- NeTEx 1.x style: plain text, one language. Still valid in 2.0, but to be deprecated. -->
+                    <StopPlace id="ENT:StopPlace:1" version="1">
+                      <Name lang="nor">Oslo S</Name>
+                    </StopPlace>
+                    <!-- NeTEx 2.0 style: Text elements, one per language. -->
+                    <StopPlace id="ENT:StopPlace:2" version="1">
+                      <Name>
+                        <Text lang="nor">Oslo sentralstasjon</Text>
+                        <Text lang="eng">Oslo Central Station</Text>
+                      </Name>
+                    </StopPlace>
+                  </stopPlaces>
+                </SiteFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
