@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-02T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:N212" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <SiteFrame id="ENT:SiteFrame:Example" version="1">
+                  <parkings>
+                    <!-- NeTEx 2.0: a parking for recharging is its own type, with total power.
+                         Today the Nordic profile only has the boolean rechargingAvailable, a local extension not in CEN NeTEx. -->
+                    <RechargingStation id="ENT:RechargingStation:Hamar-1" version="1">
+                      <Name>Hamar stasjon, lading</Name>
+                      <TotalPower>150000</TotalPower>
+                    </RechargingStation>
+                  </parkings>
+                </SiteFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
