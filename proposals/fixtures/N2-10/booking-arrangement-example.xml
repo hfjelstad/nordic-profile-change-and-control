@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-02T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:N210" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <ServiceFrame id="ENT:ServiceFrame:Example" version="1">
+                  <lines>
+                    <!-- NeTEx 2.0: a Line can carry several booking arrangements, each with its own id. -->
+                    <Line id="ENT:Line:FLEX-1" version="1">
+                      <Name>Bestillingstransport Hamar</Name>
+                      <TransportMode>bus</TransportMode>
+                      <bookingArrangements>
+                        <BookingArrangement id="ENT:BookingArrangement:FLEX-1" version="1">
+                          <BookingMethods>callOffice online</BookingMethods>
+                          <BookWhen>untilPreviousDay</BookWhen>
+                          <BookingUrl>https://example.org/book</BookingUrl>
+                        </BookingArrangement>
+                      </bookingArrangements>
+                    </Line>
+                  </lines>
+                </ServiceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
