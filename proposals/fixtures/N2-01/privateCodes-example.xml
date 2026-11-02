@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-02T12:00:00</PublicationTimestamp>
+    <ParticipantRef>SAM</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="SAM:CompositeFrame:PrivateCodesExample" version="1">
+            <codespaces>
+                <Codespace id="sam">
+                    <Xmlns>SAM</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <SiteFrame id="SAM:SiteFrame:PrivateCodesExample" version="1">
+                    <stopPlaces>
+                        <StopPlace id="SAM:StopPlace:740000001" version="1">
+                            <privateCodes>
+                                <!-- Untyped: same meaning as the single PrivateCode today. Max one per object. -->
+                                <PrivateCode>9001</PrivateCode>
+                                <!-- Common Nordic type, agreed in CCB: no country prefix. -->
+                                <PrivateCode type="uicCode">007400003</PrivateCode>
+                                <!-- National type: country prefix, free to add. -->
+                                <PrivateCode type="SE:rikshallplatsNummer">740000001</PrivateCode>
+                            </privateCodes>
+                            <Name lang="swe">Stockholm Centralstation</Name>
+                            <TransportMode>rail</TransportMode>
+                            <StopPlaceType>railStation</StopPlaceType>
+                            <quays>
+                                <Quay id="SAM:Quay:740000001-1" version="1">
+                                    <privateCodes>
+                                        <PrivateCode>1</PrivateCode>
+                                    </privateCodes>
+                                    <Name lang="swe">Spår 1</Name>
+                                </Quay>
+                            </quays>
+                        </StopPlace>
+                    </stopPlaces>
+                </SiteFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
