@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-02T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:N208" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <SiteFrame id="ENT:SiteFrame:Example" version="1">
+                  <stopPlaces>
+                    <StopPlace id="ENT:StopPlace:1" version="1">
+                      <Name>Hamar stasjon</Name>
+                      <TransportMode>rail</TransportMode>
+                      <quays>
+                        <!-- A platform with two boarding positions (platform sectors A and B). -->
+                        <Quay id="ENT:Quay:1-1" version="1">
+                          <PublicCode>1</PublicCode>
+                          <boardingPositions>
+                            <BoardingPosition id="ENT:BoardingPosition:1-1-A" version="1">
+                              <PublicCode>A</PublicCode>
+                            </BoardingPosition>
+                            <BoardingPosition id="ENT:BoardingPosition:1-1-B" version="1">
+                              <PublicCode>B</PublicCode>
+                            </BoardingPosition>
+                          </boardingPositions>
+                        </Quay>
+                      </quays>
+                    </StopPlace>
+                  </stopPlaces>
+                </SiteFrame>
+                <ServiceFrame id="ENT:ServiceFrame:Example" version="1">
+                  <stopAssignments>
+                    <!-- The stop assignment can point past the platform to a boarding position. -->
+                    <PassengerStopAssignment id="ENT:PassengerStopAssignment:1" version="1" order="1">
+                      <ScheduledStopPointRef ref="ENT:ScheduledStopPoint:Hamar-1"/>
+                      <QuayRef ref="ENT:Quay:1-1" version="1"/>
+                      <BoardingPositionRef ref="ENT:BoardingPosition:1-1-B" version="1"/>
+                    </PassengerStopAssignment>
+                  </stopAssignments>
+                </ServiceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
