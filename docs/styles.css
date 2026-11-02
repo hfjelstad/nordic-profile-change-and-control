@@ -85,6 +85,16 @@ h3 { font-size: 1.38rem; letter-spacing: -.04em; margin-bottom: 12px; }
 .proposal-accept { background: var(--ink); border: 0; color: var(--white); cursor: pointer; font-family: var(--mono); font-size: .66rem; padding: 6px 14px; }
 .proposal-accept:hover { background: var(--teal); }
 .proposal-accept-status { color: var(--muted); font-family: var(--mono); font-size: .68rem; margin: 8px 0 0; }
+.export-toolbar { align-items: end; display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 14px; }
+.export-search input { background: var(--white); border: 1px solid var(--line); color: var(--ink); font: .78rem var(--sans); margin-left: 6px; min-width: 220px; padding: 6px 9px; }
+.export-buttons { display: flex; gap: 8px; margin-left: auto; }
+.export-secondary { background: var(--white); border: 1px solid var(--line); cursor: pointer; font: .66rem var(--mono); padding: 6px 12px; }
+.export-secondary:hover { border-color: var(--teal); color: var(--teal); }
+.export-item { align-items: flex-start; cursor: pointer; display: flex; gap: 12px; width: 100%; }
+.export-item input { accent-color: var(--teal); margin-top: 3px; }
+.export-footer { align-items: center; display: flex; flex-wrap: wrap; gap: 22px; margin-top: 18px; }
+.export-run { border: 0; cursor: pointer; font-family: inherit; margin-top: 0; }
+.export-run:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
 select { background: transparent; border: 0; border-bottom: 1px solid var(--ink); color: var(--ink); font: inherit; padding: 3px 25px 3px 4px; }
 .area-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
 .area-card { background: var(--white); border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 275px; padding: 23px; }
