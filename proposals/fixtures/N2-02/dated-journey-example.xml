@@ -20,18 +20,41 @@
                 </ServiceCalendarFrame>
                 <TimetableFrame id="ENT:TimetableFrame:DatedJourneyExample" version="1">
                     <vehicleJourneys>
-                        <!-- Planned passenger journey. No dayTypes: the operating days come from the dated journeys. -->
+                        <!-- Planned passenger journeys. No dayTypes: the operating days come from the dated journeys. -->
                         <ServiceJourney id="ENT:ServiceJourney:R10-1001" version="1">
                             <Name>Oslo S - Lillehammer</Name>
                         </ServiceJourney>
-                        <!-- Option A: DatedServiceJourney, the dated passenger journey. -->
+                        <ServiceJourney id="ENT:ServiceJourney:R10-1001-Bus" version="1">
+                            <Name>Oslo S - Lillehammer (rail replacement bus)</Name>
+                        </ServiceJourney>
+
+                        <!-- Option A: DatedServiceJourney -->
+                        <!-- The train on 14 December is replaced. -->
                         <DatedServiceJourney id="ENT:DatedServiceJourney:R10-1001-2026-12-14" version="1">
+                            <ServiceAlteration>replaced</ServiceAlteration>
                             <ServiceJourneyRef ref="ENT:ServiceJourney:R10-1001" version="1"/>
                             <OperatingDayRef ref="ENT:OperatingDay:2026-12-14"/>
                         </DatedServiceJourney>
-                        <!-- Option B: the same dated journey as a DatedVehicleJourney using the ServiceJourney. -->
+                        <!-- The bus that replaces it. NeTEx 2.0 has no DatedServiceJourneyRef, so DatedVehicleJourneyRef is used. -->
+                        <DatedServiceJourney id="ENT:DatedServiceJourney:R10-1001-Bus-2026-12-14" version="1">
+                            <ServiceJourneyRef ref="ENT:ServiceJourney:R10-1001-Bus" version="1"/>
+                            <replacedJourneys>
+                                <DatedVehicleJourneyRef ref="ENT:DatedServiceJourney:R10-1001-2026-12-14" version="1"/>
+                            </replacedJourneys>
+                            <OperatingDayRef ref="ENT:OperatingDay:2026-12-14"/>
+                        </DatedServiceJourney>
+
+                        <!-- Option B: DatedVehicleJourney, same content. The alteration is called ServiceAlterationType and comes last. -->
                         <DatedVehicleJourney id="ENT:DatedVehicleJourney:R10-1001-2026-12-14" version="1">
                             <ServiceJourneyRef ref="ENT:ServiceJourney:R10-1001" version="1"/>
+                            <OperatingDayRef ref="ENT:OperatingDay:2026-12-14"/>
+                            <ServiceAlterationType>replaced</ServiceAlterationType>
+                        </DatedVehicleJourney>
+                        <DatedVehicleJourney id="ENT:DatedVehicleJourney:R10-1001-Bus-2026-12-14" version="1">
+                            <ServiceJourneyRef ref="ENT:ServiceJourney:R10-1001-Bus" version="1"/>
+                            <replacedJourneys>
+                                <DatedVehicleJourneyRef ref="ENT:DatedVehicleJourney:R10-1001-2026-12-14" version="1"/>
+                            </replacedJourneys>
                             <OperatingDayRef ref="ENT:OperatingDay:2026-12-14"/>
                         </DatedVehicleJourney>
                     </vehicleJourneys>
