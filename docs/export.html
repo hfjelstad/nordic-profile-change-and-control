@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Export selected Nordic Profile change requests to a Word document.">
+  <title>Export change requests · Nordic Profile CCB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href=".">
+      <span class="brand-mark" aria-hidden="true">NP</span>
+      <span>Nordic Profile <strong>CCB</strong></span>
+    </a>
+    <a class="top-link" href=".">Register <span aria-hidden="true">→</span></a>
+  </header>
+
+  <main>
+    <section class="workspace" aria-labelledby="export-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Share by e-mail</p>
+          <h2 id="export-title">Export change requests</h2>
+        </div>
+        <p class="section-note">Tick the change requests you want to share and export them as one Word document, one section per change request.</p>
+      </div>
+
+      <div class="export-toolbar">
+        <label class="filter-label" for="export-label">Label <select id="export-label"><option value="">all labels</option></select></label>
+        <label class="filter-label" for="export-state">State <select id="export-state"><option value="open">open</option><option value="all">open and closed</option></select></label>
+        <label class="filter-label export-search" for="export-search">Search <input id="export-search" type="search" placeholder="title or #number"></label>
+        <span class="export-buttons">
+          <button type="button" class="export-secondary" id="export-select-visible">Select visible</button>
+          <button type="button" class="export-secondary" id="export-clear">Clear</button>
+        </span>
+      </div>
+
+      <article class="register-panel">
+        <div class="panel-heading"><h3>Change requests</h3><span class="panel-count" id="export-count">...</span></div>
+        <ul class="register-list" id="export-list">
+          <li class="register-empty"><span class="list-marker">--</span><span>Loading change requests...</span></li>
+        </ul>
+      </article>
+
+      <div class="export-footer">
+        <label class="filter-label"><input type="checkbox" id="export-comments"> Include discussion comments</label>
+        <button type="button" class="primary-action export-run" id="export-run" disabled>Export 0 to Word <span aria-hidden="true">↓</span></button>
+        <p class="action-note" id="export-status" role="status"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Nordic Profile CCB</span><span>NeTEx · SIRI · Data packages</span></footer>
+  <script src="export.js"></script>
+</body>
+</html>
