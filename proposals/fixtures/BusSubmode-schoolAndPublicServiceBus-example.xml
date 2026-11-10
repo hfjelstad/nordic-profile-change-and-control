@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-10T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:SchoolAndPublicBusExample" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <ServiceFrame id="ENT:ServiceFrame:SchoolAndPublicBusExample" version="1">
+                    <lines>
+                        <!-- A school bus that is also open to the public. -->
+                        <Line id="ENT:Line:731" version="1">
+                            <Name>Skoleskyss Brumunddal - Nes</Name>
+                            <TransportMode>bus</TransportMode>
+                            <TransportSubmode>
+                                <BusSubmode>schoolAndPublicServiceBus</BusSubmode>
+                            </TransportSubmode>
+                        </Line>
+                    </lines>
+                </ServiceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
