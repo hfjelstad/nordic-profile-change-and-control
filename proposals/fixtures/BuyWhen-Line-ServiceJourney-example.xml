@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-10T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:BuyWhenExample" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <ServiceFrame id="ENT:ServiceFrame:BuyWhenExample" version="1">
+                    <lines>
+                        <!-- Default for the line: the ticket must be bought before boarding. -->
+                        <Line id="ENT:Line:R10" version="1">
+                            <Name>Oslo S - Lillehammer</Name>
+                            <TransportMode>rail</TransportMode>
+                            <bookingArrangements>
+                                <BookingArrangement id="ENT:BookingArrangement:R10" version="1">
+                                    <BuyWhen>beforeBoarding</BuyWhen>
+                                </BookingArrangement>
+                            </bookingArrangements>
+                        </Line>
+                    </lines>
+                </ServiceFrame>
+                <TimetableFrame id="ENT:TimetableFrame:BuyWhenExample" version="1">
+                    <vehicleJourneys>
+                        <!-- Follows the line: no BuyWhen of its own. -->
+                        <ServiceJourney id="ENT:ServiceJourney:R10-1001" version="1">
+                            <Name>Oslo S - Lillehammer</Name>
+                            <LineRef ref="ENT:Line:R10" version="1"/>
+                        </ServiceJourney>
+                        <!-- Overrides the line: on this journey the ticket can also be bought on board. -->
+                        <!-- ServiceJourney has no bookingArrangements of its own; NeTEx 2.0 places them in FlexibleServiceProperties. -->
+                        <ServiceJourney id="ENT:ServiceJourney:R10-1099" version="1">
+                            <Name>Oslo S - Lillehammer (night)</Name>
+                            <LineRef ref="ENT:Line:R10" version="1"/>
+                            <FlexibleServiceProperties id="ENT:FlexibleServiceProperties:R10-1099" version="1">
+                                <bookingArrangements>
+                                    <BookingArrangement id="ENT:BookingArrangement:R10-1099" version="1">
+                                        <BuyWhen>beforeBoarding onBoarding</BuyWhen>
+                                    </BookingArrangement>
+                                </bookingArrangements>
+                            </FlexibleServiceProperties>
+                        </ServiceJourney>
+                    </vehicleJourneys>
+                </TimetableFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
