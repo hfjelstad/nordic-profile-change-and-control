@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
+    <PublicationTimestamp>2026-11-10T12:00:00</PublicationTimestamp>
+    <ParticipantRef>ENT</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame id="ENT:CompositeFrame:GroupOfLinesExample" version="1">
+            <codespaces>
+                <Codespace id="ent">
+                    <Xmlns>ENT</Xmlns>
+                    <XmlnsUrl>https://registry.example.org/netex</XmlnsUrl>
+                </Codespace>
+            </codespaces>
+            <frames>
+                <ServiceFrame id="ENT:ServiceFrame:GroupOfLinesExample" version="1">
+                    <lines>
+                        <Line id="ENT:Line:R10" version="1">
+                            <Name>Oslo S - Lillehammer</Name>
+                            <TransportMode>rail</TransportMode>
+                            <RepresentedByGroupRef ref="ENT:GroupOfLines:Regiontog" version="1"/>
+                        </Line>
+                        <Line id="ENT:Line:R20" version="1">
+                            <Name>Oslo S - Halden</Name>
+                            <TransportMode>rail</TransportMode>
+                            <RepresentedByGroupRef ref="ENT:GroupOfLines:Regiontog" version="1"/>
+                        </Line>
+                    </lines>
+                    <!-- GroupOfLines directly in the ServiceFrame, not inside Network/groupsOfLines. -->
+                    <groupsOfLines>
+                        <GroupOfLines id="ENT:GroupOfLines:Regiontog" version="1">
+                            <Name>Regiontog Østlandet</Name>
+                            <members>
+                                <LineRef ref="ENT:Line:R10" version="1"/>
+                                <LineRef ref="ENT:Line:R20" version="1"/>
+                            </members>
+                        </GroupOfLines>
+                    </groupsOfLines>
+                </ServiceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
