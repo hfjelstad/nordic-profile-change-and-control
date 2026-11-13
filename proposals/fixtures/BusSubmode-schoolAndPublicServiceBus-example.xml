@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.netex.org.uk/netex NeTEx_publication.xsd" version="1.0">
-    <PublicationTimestamp>2026-11-10T12:00:00</PublicationTimestamp>
+    <PublicationTimestamp>2026-11-13T12:00:00</PublicationTimestamp>
     <ParticipantRef>ENT</ParticipantRef>
     <dataObjects>
         <CompositeFrame id="ENT:CompositeFrame:SchoolAndPublicBusExample" version="1">
@@ -13,7 +13,7 @@
             <frames>
                 <ServiceFrame id="ENT:ServiceFrame:SchoolAndPublicBusExample" version="1">
                     <lines>
-                        <!-- A school bus that is also open to the public. -->
+                        <!-- A school bus line that is also open to the public. -->
                         <Line id="ENT:Line:731" version="1">
                             <Name>Skoleskyss Brumunddal - Nes</Name>
                             <TransportMode>bus</TransportMode>
@@ -21,8 +21,29 @@
                                 <BusSubmode>schoolAndPublicServiceBus</BusSubmode>
                             </TransportSubmode>
                         </Line>
+                        <!-- A regular local bus line. -->
+                        <Line id="ENT:Line:100" version="1">
+                            <Name>Hamar - Brumunddal</Name>
+                            <TransportMode>bus</TransportMode>
+                            <TransportSubmode>
+                                <BusSubmode>localBus</BusSubmode>
+                            </TransportSubmode>
+                        </Line>
                     </lines>
                 </ServiceFrame>
+                <TimetableFrame id="ENT:TimetableFrame:SchoolAndPublicBusExample" version="1">
+                    <vehicleJourneys>
+                        <!-- One departure on the local bus line runs as a school bus that is also open to the public. -->
+                        <ServiceJourney id="ENT:ServiceJourney:100-0715" version="1">
+                            <Name>Hamar - Brumunddal 07:15</Name>
+                            <TransportMode>bus</TransportMode>
+                            <TransportSubmode>
+                                <BusSubmode>schoolAndPublicServiceBus</BusSubmode>
+                            </TransportSubmode>
+                            <LineRef ref="ENT:Line:100" version="1"/>
+                        </ServiceJourney>
+                    </vehicleJourneys>
+                </TimetableFrame>
             </frames>
         </CompositeFrame>
     </dataObjects>
