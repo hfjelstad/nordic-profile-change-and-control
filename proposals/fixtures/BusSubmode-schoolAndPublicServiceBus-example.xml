@@ -13,7 +13,7 @@
             <frames>
                 <ServiceFrame id="ENT:ServiceFrame:SchoolAndPublicBusExample" version="1">
                     <lines>
-                        <!-- A school bus line that is also open to the public. -->
+                        <!-- A school line that is also open to the public. -->
                         <Line id="ENT:Line:731" version="1">
                             <Name>Skoleskyss Brumunddal - Nes</Name>
                             <TransportMode>bus</TransportMode>
@@ -21,26 +21,17 @@
                                 <BusSubmode>schoolAndPublicServiceBus</BusSubmode>
                             </TransportSubmode>
                         </Line>
-                        <!-- A regular local bus line. -->
-                        <Line id="ENT:Line:100" version="1">
-                            <Name>Hamar - Brumunddal</Name>
-                            <TransportMode>bus</TransportMode>
-                            <TransportSubmode>
-                                <BusSubmode>localBus</BusSubmode>
-                            </TransportSubmode>
-                        </Line>
                     </lines>
                 </ServiceFrame>
                 <TimetableFrame id="ENT:TimetableFrame:SchoolAndPublicBusExample" version="1">
                     <vehicleJourneys>
-                        <!-- One departure on the local bus line runs as a school bus that is also open to the public. -->
-                        <ServiceJourney id="ENT:ServiceJourney:100-0715" version="1">
-                            <Name>Hamar - Brumunddal 07:15</Name>
+                        <!-- A journey on that line reserved for pupils overrides the Line's submode. -->
+                        <ServiceJourney id="ENT:ServiceJourney:731-0745" version="1">
                             <TransportMode>bus</TransportMode>
                             <TransportSubmode>
-                                <BusSubmode>schoolAndPublicServiceBus</BusSubmode>
+                                <BusSubmode>schoolBus</BusSubmode>
                             </TransportSubmode>
-                            <LineRef ref="ENT:Line:100" version="1"/>
+                            <LineRef ref="ENT:Line:731"/>
                         </ServiceJourney>
                     </vehicleJourneys>
                 </TimetableFrame>
